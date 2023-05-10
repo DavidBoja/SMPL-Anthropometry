@@ -198,7 +198,15 @@ class MeasurementDefinitions():
                     }
 
     CIRCUMFERENCE_TO_BODYPARTS = {
+        "head circumference": "head",
+        "neck circumference":"neck",
+        "chest circumference":["spine1","spine2"],
+        "waist circumference":["hips","spine"],
+        "hip circumference":"hips",
+        "wrist right circumference":["rightHand","rightForeArm"],
+        "bicep right circumference":"rightArm",
+        "forearm right circumference":"rightForeArm",
         "thigh left circumference": "leftUpLeg",
         "calf left circumference": "leftLeg",
-        "ankle left circumference": "leftLeg"
+        "ankle left circumference": "leftLeg",
     }
