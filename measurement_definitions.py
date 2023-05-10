@@ -30,6 +30,8 @@ IND2JOINT = {
     23: 'right_hand'
 }
 
+JOINT2IND = {name:ind for ind,name in IND2JOINT.items()}
+
 STANDARD_LABELS = {
         'A': 'head circumference',
         'B': 'neck circumference',
@@ -156,44 +158,44 @@ class MeasurementDefinitions():
                     ),
                }
 
-    # defined with landmarks and normals
+    # defined with landmarks and joints
     # landmarks are defined with the indices of the smpl model
-    # normals are defined with joint indices of the smpl model
+    # normals are defined with joint names of the smpl model
     CIRCUMFERENCES = {
         "head circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["HEAD_LEFT_TEMPLE"]],
-                               "NORMAL_JOINTS_INDICES":[0,9]},
+                               "JOINTS":["pelvis","spine3"]},
 
         "neck circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["NECK_ADAM_APPLE"]],
-                               "NORMAL_JOINTS_INDICES":[12,15]},
+                               "JOINTS":["neck","head"]},
         
         "chest circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["LEFT_NIPPLE"],
                                                    LANDMARK_INDICES["RIGHT_NIPPLE"]],
-                               "NORMAL_JOINTS_INDICES":[0,9]},
+                               "JOINTS":["pelvis","spine3"]},
 
         "waist circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["BELLY_BUTTON"],
                                                    LANDMARK_INDICES["BACK_BELLY_BUTTON"]],
-                               "NORMAL_JOINTS_INDICES":[0,9]},
+                               "JOINTS":["pelvis","spine3"]},
         
         "hip circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["PUBIC_BONE"]],
-                               "NORMAL_JOINTS_INDICES":[0,9]},
+                               "JOINTS":["pelvis","spine3"]},
         
         "wrist right circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["RIGHT_WRIST"]],
-                               "NORMAL_JOINTS_INDICES":[21,23]},
+                               "JOINTS":["right_wrist","right_hand"]},
         
         "bicep right circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["RIGHT_BICEP"]],
-                               "NORMAL_JOINTS_INDICES":[17,19]},
+                                    "JOINTS":["right_shoulder","right_elbow"]},
 
         "forearm right circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["RIGHT_FOREARM"]],
-                                        "NORMAL_JOINTS_INDICES":[19,21]},
+                                        "JOINTS":["right_elbow","right_wrist"]},
         
         "thigh left circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["LEFT_THIGH"]],
-                                        "NORMAL_JOINTS_INDICES":[0,9]},
+                                        "JOINTS":["pelvis","spine3"]},
         
         "calf left circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["LEFT_CALF"]],
-                                        "NORMAL_JOINTS_INDICES":[0,9]},
+                                        "JOINTS":["pelvis","spine3"]},
 
         "ankle left circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["LEFT_ANKLE"]],
-                                        "NORMAL_JOINTS_INDICES":[0,9]},      
+                                        "JOINTS":["pelvis","spine3"]},      
                     
                     }
 

@@ -330,7 +330,8 @@ class MeasureSMPL():
         '''
 
         circumf_landmark_indices = self.circumf_definitions[measurement_name]["LANDMARK_INDICES"]
-        circumf_n1, circumf_n2 = self.circumf_definitions[measurement_name]["NORMAL_JOINTS_INDICES"]
+        circumf_n1, circumf_n2 = self.circumf_definitions[measurement_name]["JOINTS"]
+        circumf_n1, circumf_n2 = JOINT2IND[circumf_n1], JOINT2IND[circumf_n2]
         
         plane_origin = np.mean(verts[circumf_landmark_indices,:],axis=0)
         plane_normal = self.joints[circumf_n1,:] - self.joints[circumf_n2,:]
@@ -559,7 +560,8 @@ class MeasureSMPL():
 
         measurement_definition = self.circumf_definitions[measurement_name]
         circumf_landmark_indices = measurement_definition["LANDMARK_INDICES"]
-        circumf_n1, circumf_n2 = measurement_definition["NORMAL_JOINTS_INDICES"]
+        circumf_n1, circumf_n2 = self.circumf_definitions[measurement_name]["JOINTS"]
+        circumf_n1, circumf_n2 = JOINT2IND[circumf_n1], JOINT2IND[circumf_n2]
         
         plane_origin = np.mean(self.verts[circumf_landmark_indices,:],axis=0)
         plane_normal = self.joints[circumf_n1,:] - self.joints[circumf_n2,:]
