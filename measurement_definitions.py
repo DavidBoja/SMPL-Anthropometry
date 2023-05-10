@@ -164,7 +164,7 @@ class MeasurementDefinitions():
                                "NORMAL_JOINTS_INDICES":[0,9]},
 
         "neck circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["NECK_ADAM_APPLE"]],
-                               "NORMAL_JOINTS_INDICES":[0,9]},
+                               "NORMAL_JOINTS_INDICES":[12,15]},
         
         "chest circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["LEFT_NIPPLE"],
                                                    LANDMARK_INDICES["RIGHT_NIPPLE"]],
