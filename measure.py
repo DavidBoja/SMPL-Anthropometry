@@ -164,6 +164,21 @@ class MeasureSMPL():
         return mesh_plot
         
     @staticmethod
+    def create_joint_plot(joints: np.ndarray):
+
+        return go.Scatter3d(x = joints[:,0],
+                            y = joints[:,1], 
+                            z = joints[:,2], 
+                            mode='markers',
+                            marker=dict(size=8,
+                                        color="black",
+                                        opacity=1,
+                                        symbol="cross"
+                                        ),
+                            name="joints"
+                                )
+    
+    @staticmethod
     def create_wireframe_plot(verts: np.ndarray,faces: np.ndarray):
         '''
         Given vertices and faces, creates a wireframe of plotly segments.
@@ -394,6 +409,10 @@ class MeasureSMPL():
         fig = go.Figure()
         mesh_plot = self.create_mesh_plot(verts, faces)
         fig.add_trace(mesh_plot)
+
+        # visualize joints
+        joint_plot = self.create_joint_plot(self.joints)
+        fig.add_trace(joint_plot)
 
 
         # visualize wireframe
