@@ -113,9 +113,10 @@ class MeasureSMPL():
         :param verts: torch.tensor (N,3) of SMPL vertices
         '''        
 
-        self.verts = verts
         joint_regressor = get_SMPL_joint_regressor(self.smpl_path)
-        self.joints = torch.matmul(joint_regressor, verts)
+        joints = torch.matmul(joint_regressor, verts)
+        self.joints = joints.numpy()
+        self.verts = verts.numpy()
 
     def from_smpl(self,
                   gender: str,
