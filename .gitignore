@@ -1,0 +1,4 @@
+
+data/SMPL/smpl/*
+!data/SMPL/smpl/.gitkeep 
+__pycache__/*
