@@ -602,8 +602,13 @@ class MeasureSMPL():
 
         if measurement_name in self.circumf_2_bodypart.keys():
 
-            body_part = self.circumf_2_bodypart[measurement_name]
-            body_part_faces = self.face_segmentation[body_part]
+            body_parts = self.circumf_2_bodypart[measurement_name]
+
+            if isinstance(body_parts,list):
+                body_part_faces = [face_index for body_part in body_parts 
+                                    for face_index in self.face_segmentation[body_part]]
+            else:
+                body_part_faces = self.face_segmentation[body_parts]
 
             N_sliced_faces = sliced_faces.shape[0]
 
