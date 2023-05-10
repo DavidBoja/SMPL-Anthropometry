@@ -542,7 +542,9 @@ class MeasureSMPL():
         '''
 
         verts_distances = np.linalg.norm(verts[:, 1] - verts[:, 0],axis=1)
-        return np.sum(verts_distances)
+        distance = np.sum(verts_distances)
+        distance_cm = distance * 100 # convert to cm
+        return distance_cm
     
     def measure_circumference(self, 
                               measurement_name: str, 
