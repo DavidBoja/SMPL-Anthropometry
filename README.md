@@ -22,15 +22,14 @@ If you do not want to use a docker container, you can also just install the nece
 Next, you need to provide the SMPL body models `SMPL_{GENDER}.pkl` (MALE, FEMALE and NEUTRAL), and put them into the `data/SMPL/smpl` folder.
 
 ## Running
-You can use the demo script to measure all the predefined measurements and visualize the results.
+You can use the `measure.py` script to measure all the predefined measurements and visualize the results.
 
 ```python
-python demo.py
+python measure.py
 ```
 
 The output consists of a dictionary of measurements expressed in cm, the labeled measurements using standard labels, 
-and the viualization of the measurements in the browser, as in the Figure above.
-
+and the viualization of the measurements in the browser, as in the Figure above. The script measures a toy-example zero-shaped T-posed SMPL body model -- adapt the script to your needs.
 
 
 The list of the predefined measurements along with its standard literature labels are:
@@ -55,6 +54,14 @@ STANDARD_MEASUREMENT = {
     'P': 'height'
     }
 ```
+
+You can use the `evaluate.py` script to compare two sets of measurements.
+
+```python
+python evaluate.py
+```
+The output consists of the mean absolute error (MAE) between two sets of measurements. The script compares a toy-example of two sets of measurements of two SMPL body models -- adapt to your needs.
+
 
 ## NOTES
 
@@ -82,17 +89,42 @@ To define a new measurement:
    used for finding the measurement. The body parts are defined by the SMPL 
    face segmentation located in `data/smpl_body_parts_2_faces.json`.
 
+### Measurement normalization
+If a body model has unknown scale (ex. the body was regressed from an image), the measurements can be height-normalized as so:
+
+```python
+measurer = MeasureSMPL()
+measurer.from_smpl(shape=betas, gender=gender) # assume given betas and gender
+
+all_measurement_names = MeasurementDefinitions.possible_measurements
+measurer.measure(all_measurement_names)
+new_height = 175
+measurer.height_normalize_measurements(new_height)
+```
+
+This creates a dict of measurements `measurer.height_normalized_measurements` where each measurement was normalized with:
+```
+new_measurement = (old_measurement / old_height) * new_height
+```
 
 ### Body model 
 The body model can be defined by:
-- the SMPL shape parameters β using `MeasureSMPL(...).from_smpl`
-- the 6890 SMPL vertices, without the shape parameters, using `MeasureSMPL(...).from_verts`
+- the SMPL shape parameters β using:
+```python
+MeasureSMPL(...).from_smpl(betas, gender)
+```
+- the 6890 SMPL vertices, without the shape parameters, using 
+```python 
+MeasureSMPL(...).from_verts(verts)
+```
+
+The latter can be especially useful when the SMPL vertices have been further refined to fit a 2D/3D model and do not satsify perfectly a set of shape parameters anymore.
 
 
 ## TODO
 
 - [ ] Implement other body models (SMPL-X, STAR, ...)
-- [ ] Add height normalization for the measurements
+- [X] Add height normalization for the measurements
 - [ ] Allow posed and shaped body models as inputs, and measure them after unposing
 
 
