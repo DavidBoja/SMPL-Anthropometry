@@ -6,6 +6,8 @@ Measure the SMPL body model and visualize the measurements and landmarks.
   <img src="https://github.com/DavidBoja/SMPL-Anthropometry/blob/master/assets/measurement_visualization.png" width="950">
 </p>
 
+<br>
+
 ## Getting started
 You can use a docker container to facilitate running the code. Run in terminal:
 
@@ -20,6 +22,8 @@ by adjusting the `CODE_PATH` to the `SMPL-Anthropometry` directory location. Thi
 If you do not want to use a docker container, you can also just install the necessary packages from `docker/requirements.txt` into your own enviroment.
 
 Next, you need to provide the SMPL body models `SMPL_{GENDER}.pkl` (MALE, FEMALE and NEUTRAL), and put them into the `data/SMPL/smpl` folder.
+
+<br>
 
 ## Running
 You can use the `measure.py` script to measure all the predefined measurements and visualize the results.
@@ -55,6 +59,8 @@ STANDARD_MEASUREMENT = {
     }
 ```
 
+<br>
+
 You can use the `evaluate.py` script to compare two sets of measurements.
 
 ```python
@@ -62,8 +68,10 @@ python evaluate.py
 ```
 The output consists of the mean absolute error (MAE) between two sets of measurements. The script compares a toy-example of two sets of measurements of two SMPL body models -- adapt to your needs.
 
+<br>
+<br>
 
-## NOTES
+## Notes
 
 ### Measurement definitions
 There are two types of measurements: lenghts and circumferences.
@@ -89,6 +97,8 @@ To define a new measurement:
    used for finding the measurement. The body parts are defined by the SMPL 
    face segmentation located in `data/smpl_body_parts_2_faces.json`.
 
+<br>
+
 ### Measurement normalization
 If a body model has unknown scale (ex. the body was regressed from an image), the measurements can be height-normalized as so:
 
@@ -107,6 +117,8 @@ This creates a dict of measurements `measurer.height_normalized_measurements` wh
 new_measurement = (old_measurement / old_height) * new_height
 ```
 
+<br>
+
 ### Body model 
 The body model can be defined by:
 - the SMPL shape parameters β using:
@@ -120,6 +132,8 @@ MeasureSMPL(...).from_verts(verts)
 
 The latter can be especially useful when the SMPL vertices have been further refined to fit a 2D/3D model and do not satsify perfectly a set of shape parameters anymore.
 
+<br>
+<br>
 
 ## TODO
 
