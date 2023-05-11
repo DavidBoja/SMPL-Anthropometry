@@ -96,7 +96,9 @@ class MeasureSMPL():
         self.face_segmentation = load_face_segmentation(self.smpl_path)
 
         self.measurements = {}
+        self.height_normalized_measurements = {}
         self.labeled_measurements = {}
+        self.height_normalized_labeled_measurements = {}
         self.labels2names = {}
         self.landmarks = MeasurementDefinitions().LANDMARK_INDICES
         self.measurement_types = MeasurementDefinitions().measurement_types
@@ -655,6 +657,34 @@ class MeasureSMPL():
         slice_segments_hull = slice_segments_hull.reshape(-1,2,3)
 
         return slice_segments_hull
+
+    def height_normalize_measurements(self, new_height: float):
+        ''' 
+        Scale all measurements so that the height measurement gets
+        the value of new_height:
+        new_measurement = (old_measurement / old_height) * new_height
+        NOTE the measurements and body model remain unchanged, a new
+        dictionary height_normalized_measurements is created.
+        
+        Input:
+        :param new_height: float, the newly defined height.
+
+        Return:
+        self.height_normalized_measurements: dict of 
+                {measurement:value} pairs with 
+                height measurement = new_height, and other measurements
+                scaled accordingly
+        '''
+        if self.measurements != {}:
+            old_height = self.measurements["height"]
+            for m_name, m_value in self.measurements.items():
+                norm_value = (m_value / old_height) * new_height
+                self.height_normalized_measurements[m_name] = norm_value
+
+            if self.labeled_measurements != {}:
+                for m_name, m_value in self.labeled_measurements.items():
+                    norm_value = (m_value / old_height) * new_height
+                    self.height_normalized_labeled_measurements[m_name] = norm_value
 
     def label_measurements(self,set_measurement_labels: Dict[str, str]):
         '''
