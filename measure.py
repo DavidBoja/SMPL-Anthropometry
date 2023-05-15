@@ -331,7 +331,8 @@ class MeasureSMPL():
         plotly object to plot
         '''
 
-        circumf_landmark_indices = self.circumf_definitions[measurement_name]["LANDMARK_INDICES"]
+        circumf_landmarks = self.circumf_definitions[measurement_name]["LANDMARKS"]
+        circumf_landmark_indices = [self.landmarks[l_name] for l_name in circumf_landmarks]
         circumf_n1, circumf_n2 = self.circumf_definitions[measurement_name]["JOINTS"]
         circumf_n1, circumf_n2 = JOINT2IND[circumf_n1], JOINT2IND[circumf_n2]
         
@@ -563,7 +564,8 @@ class MeasureSMPL():
         '''
 
         measurement_definition = self.circumf_definitions[measurement_name]
-        circumf_landmark_indices = measurement_definition["LANDMARK_INDICES"]
+        circumf_landmarks = measurement_definition["LANDMARKS"]
+        circumf_landmark_indices = [self.landmarks[l_name] for l_name in circumf_landmarks]
         circumf_n1, circumf_n2 = self.circumf_definitions[measurement_name]["JOINTS"]
         circumf_n1, circumf_n2 = JOINT2IND[circumf_n1], JOINT2IND[circumf_n2]
         

@@ -162,40 +162,38 @@ class MeasurementDefinitions():
     # landmarks are defined with indices of the smpl model points
     # normals are defined with joint names of the smpl model
     CIRCUMFERENCES = {
-        "head circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["HEAD_LEFT_TEMPLE"]],
+        "head circumference":{"LANDMARKS":["HEAD_LEFT_TEMPLE"],
                                "JOINTS":["pelvis","spine3"]},
 
-        "neck circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["NECK_ADAM_APPLE"]],
+        "neck circumference":{"LANDMARKS":["NECK_ADAM_APPLE"],
                                "JOINTS":["neck","head"]},
         
-        "chest circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["LEFT_NIPPLE"],
-                                                   LANDMARK_INDICES["RIGHT_NIPPLE"]],
+        "chest circumference":{"LANDMARKS":["LEFT_NIPPLE","RIGHT_NIPPLE"],
                                "JOINTS":["pelvis","spine3"]},
 
-        "waist circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["BELLY_BUTTON"],
-                                                   LANDMARK_INDICES["BACK_BELLY_BUTTON"]],
+        "waist circumference":{"LANDMARKS":["BELLY_BUTTON","BACK_BELLY_BUTTON"],
                                "JOINTS":["pelvis","spine3"]},
         
-        "hip circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["PUBIC_BONE"]],
+        "hip circumference":{"LANDMARKS":["PUBIC_BONE"],
                                "JOINTS":["pelvis","spine3"]},
         
-        "wrist right circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["RIGHT_WRIST"]],
-                               "JOINTS":["right_wrist","right_hand"]},
+        "wrist right circumference":{"LANDMARKS":["RIGHT_WRIST"],
+                                    "JOINTS":["right_wrist","right_hand"]},
         
-        "bicep right circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["RIGHT_BICEP"]],
+        "bicep right circumference":{"LANDMARKS":["RIGHT_BICEP"],
                                     "JOINTS":["right_shoulder","right_elbow"]},
 
-        "forearm right circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["RIGHT_FOREARM"]],
+        "forearm right circumference":{"LANDMARKS":["RIGHT_FOREARM"],
                                         "JOINTS":["right_elbow","right_wrist"]},
         
-        "thigh left circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["LEFT_THIGH"]],
-                                        "JOINTS":["pelvis","spine3"]},
+        "thigh left circumference":{"LANDMARKS":["LEFT_THIGH"],
+                                    "JOINTS":["pelvis","spine3"]},
         
-        "calf left circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["LEFT_CALF"]],
-                                        "JOINTS":["pelvis","spine3"]},
+        "calf left circumference":{"LANDMARKS":["LEFT_CALF"],
+                                    "JOINTS":["pelvis","spine3"]},
 
-        "ankle left circumference":{"LANDMARK_INDICES":[LANDMARK_INDICES["LEFT_ANKLE"]],
-                                        "JOINTS":["pelvis","spine3"]},      
+        "ankle left circumference":{"LANDMARKS":["LEFT_ANKLE"],
+                                    "JOINTS":["pelvis","spine3"]},      
                     
                     }
 
