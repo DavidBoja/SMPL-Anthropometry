@@ -100,7 +100,7 @@ class MeasureSMPL():
         self.labeled_measurements = {}
         self.height_normalized_labeled_measurements = {}
         self.labels2names = {}
-        self.landmarks = MeasurementDefinitions().LANDMARK_INDICES
+        self.landmarks = LANDMARK_INDICES
         self.measurement_types = MeasurementDefinitions().measurement_types
         self.length_definitions = MeasurementDefinitions().LENGTHS
         self.circumf_definitions = MeasurementDefinitions().CIRCUMFERENCES
