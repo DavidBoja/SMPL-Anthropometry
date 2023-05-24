@@ -115,6 +115,8 @@ class MeasureSMPL():
         :param verts: torch.tensor (N,3) of SMPL vertices
         '''        
 
+        assert verts.shape == torch.Size([6890,3]), "verts need to be of dimension (6890,3)"
+
         joint_regressor = get_SMPL_joint_regressor(self.smpl_path)
         joints = torch.matmul(joint_regressor, verts)
         self.joints = joints.numpy()
