@@ -52,8 +52,8 @@ measurer.from_smpl(gender=gender, shape=betas)
 measurer = MeasureSMPL(smpl_path=smpl_path) 
 measurer.from_verts(verts=verts) 
 ```
-&nbsp;&nbsp;&nbsp;&nbsp; Defining the body using the vertices can be especially useful when the SMPL vertices have been further refined to fit a 2D/3D model <br>
-&nbsp;&nbsp;&nbsp;&nbsp; and do not satsify perfectly a set of shape parameters anymore.
+&nbsp;&nbsp;&nbsp;&nbsp; Defining the body using the vertices can be especially useful when the SMPL vertices have been further refined to <br>
+&nbsp;&nbsp;&nbsp;&nbsp; fit a 2D/3D model and do not satsify perfectly a set of shape parameters anymore.
 
 <br>
 
