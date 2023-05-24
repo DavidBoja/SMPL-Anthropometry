@@ -26,17 +26,45 @@ Next, you need to provide the SMPL body models `SMPL_{GENDER}.pkl` (MALE, FEMALE
 <br>
 
 ## Running
-You can use the `measure.py` script to measure all the predefined measurements and visualize the results.
+
+First import the necessary libraries and define the SMPL bodies path:
 
 ```python
-python measure.py
+from measure import MeasureSMPL
+from measurement_definitions import MeasurementDefinitions, STANDARD_LABELS
+
+smpl_path = "/SMPL-Anthropometry/data/SMPL" 
+```
+<br>
+
+Then, there are two ways of using the code for measuring an SMPL body model depending on how you want to define the body:
+
+1. Define the SMPL body using the shape `betas` and gender `gender` parameters:
+
+```python
+measurer = MeasureSMPL(smpl_path=smpl_path) 
+measurer.from_smpl(gender=gender, shape=betas) 
 ```
 
-The output consists of a dictionary of measurements expressed in cm, the labeled measurements using standard labels, 
-and the viualization of the measurements in the browser, as in the Figure above. The script measures a toy-example zero-shaped T-posed SMPL body model -- adapt the script to your needs.
+2. Define the SMPL body using the 6890 x 3 vertices `verts`:
 
+```python
+measurer = MeasureSMPL(smpl_path=smpl_path) 
+measurer.from_verts(verts=verts) 
+```
+&nbsp;&nbsp;&nbsp;&nbsp; Defining the body using the vertices can be especially useful when the SMPL vertices have been further refined to fit a 2D/3D model <br>
+&nbsp;&nbsp;&nbsp;&nbsp; and do not satsify perfectly a set of shape parameters anymore.
 
-The list of the predefined measurements along with its standard literature labels are:
+<br>
+
+Finally, you can measure the SMPL bodies with:
+```python
+measurement_names = MeasurementDefinitions.possible_measurements 
+measurer.measure(measurement_names) 
+measurer.label_measurements(STANDARD_LABELS) 
+```
+
+Then, the measurements dictionary can be obtained with `measurer.measurements` and the labeled measurements can be obtained with `measurer.labeled_measurements`. The list of the predefined measurements along with its standard literature labels are:
 
 ```
 STANDARD_MEASUREMENT = {
@@ -59,14 +87,39 @@ STANDARD_MEASUREMENT = {
     }
 ```
 
+All the measurements are expressed in cm.
+
 <br>
 
-You can use the `evaluate.py` script to compare two sets of measurements.
+You can also compute the mean absolute error (MAE) between two sets of measurements as:
+```python
+from evaluate import evaluate_mae
+MAE = evaluate_mae(measurer1.measurements,measurer2.measurements)
+```
+
+where `measurer1` and `measurer2` are two intances of the `MeasureSMPL` class.
+
+<br>
+
+## Demos
+
+You can run the `measure.py` script to measure all the predefined measurements (mentioned above) and visualize the results for a zero-shaped T-posed SMPL body model:
+
+```python
+python measure.py
+```
+
+The output consists of a dictionary of measurements expressed in cm, the labeled measurements using standard labels,and the viualization of the measurements in the browser, as in the Figure above.
+
+
+<br>
+
+You can run the `evaluate.py` script to compare two sets of measurements of randomly shaped SMPL bodies as:
 
 ```python
 python evaluate.py
 ```
-The output consists of the mean absolute error (MAE) between two sets of measurements. The script compares a toy-example of two sets of measurements of two SMPL body models -- adapt to your needs.
+The output consists of the mean absolute error (MAE) between two sets of measurements.
 
 <br>
 <br>
@@ -116,21 +169,6 @@ This creates a dict of measurements `measurer.height_normalized_measurements` wh
 ```
 new_measurement = (old_measurement / old_height) * new_height
 ```
-
-<br>
-
-### Body model 
-The body model can be defined by:
-- the SMPL shape parameters β using:
-```python
-MeasureSMPL(...).from_smpl(betas, gender)
-```
-- the 6890 SMPL vertices, without the shape parameters, using 
-```python 
-MeasureSMPL(...).from_verts(verts)
-```
-
-The latter can be especially useful when the SMPL vertices have been further refined to fit a 2D/3D model and do not satsify perfectly a set of shape parameters anymore.
 
 <br>
 <br>
