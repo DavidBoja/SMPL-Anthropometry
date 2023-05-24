@@ -112,7 +112,7 @@ class MeasureSMPL():
                    verts: torch.tensor):
         '''
         Construct body model from only vertices.
-        :param verts: torch.tensor (N,3) of SMPL vertices
+        :param verts: torch.tensor (6890,3) of SMPL vertices
         '''        
 
         assert verts.shape == torch.Size([6890,3]), "verts need to be of dimension (6890,3)"
