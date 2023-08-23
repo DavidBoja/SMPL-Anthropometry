@@ -343,7 +343,10 @@ class MeasureSMPL(Measurer):
 
         assert verts.shape == torch.Size([6890,3]), "verts need to be of dimension (6890,3)"
 
-        joint_regressor = get_joint_regressor(self.body_model_path)
+        joint_regressor = get_joint_regressor(self.model_type, 
+                                              self.body_model_root,
+                                              gender="MALE", 
+                                              num_thetas=self.num_joints)
         joints = torch.matmul(joint_regressor, verts)
         self.joints = joints.numpy()
         self.verts = verts.numpy()
