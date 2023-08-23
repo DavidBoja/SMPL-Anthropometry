@@ -1,36 +1,6 @@
 
-
-SMPL_NUM_KPTS = 24
-
-# https://meshcapade.wiki/SMPL
-IND2JOINT = {
-    0: 'pelvis',
-     1: 'left_hip',
-     2: 'right_hip',
-     3: 'spine1',
-     4: 'left_knee',
-     5: 'right_knee',
-     6: 'spine2',
-     7: 'left_ankle',
-     8: 'right_ankle',
-     9: 'spine3',
-    10: 'left_foot',
-    11: 'right_foot',
-    12: 'neck',
-    13: 'left_collar',
-    14: 'right_collar',
-    15: 'head',
-    16: 'left_shoulder',
-    17: 'right_shoulder',
-    18: 'left_elbow',
-    19: 'right_elbow',
-    20: 'left_wrist',
-    21: 'right_wrist',
-    22: 'left_hand',
-    23: 'right_hand'
-}
-
-JOINT2IND = {name:ind for ind,name in IND2JOINT.items()}
+from landmark_definitions import *
+from joint_definitions import *
 
 STANDARD_LABELS = {
         'A': 'head circumference',
@@ -51,43 +21,33 @@ STANDARD_LABELS = {
         'P': 'height'
     }
 
-# Landmarks
-LANDMARK_INDICES = {"HEAD_TOP": 412,
-                    "HEAD_LEFT_TEMPLE": 166,
-                    "NECK_ADAM_APPLE": 3050,
-                    "LEFT_HEEL": 3458,
-                    "RIGHT_HEEL": 6858,
-                    "LEFT_NIPPLE": 3042,
-                    "RIGHT_NIPPLE": 6489,
-
-                    "SHOULDER_TOP": 3068,
-                    "INSEAM_POINT": 3149,
-                    "BELLY_BUTTON": 3501,
-                    "BACK_BELLY_BUTTON": 3022,
-                    "CROTCH": 1210,
-                    "PUBIC_BONE": 3145,
-                    "RIGHT_WRIST": 5559,
-                    "LEFT_WRIST": 2241,
-                    "RIGHT_BICEP": 4855,
-                    "RIGHT_FOREARM": 5197,
-                    "LEFT_SHOULDER": 3011,
-                    "RIGHT_SHOULDER": 6470,
-                    "LEFT_ANKLE": 3334,
-                    "LOW_LEFT_HIP": 3134,
-                    "LEFT_THIGH": 947,
-                    "LEFT_CALF": 1074,
-                    "LEFT_ANKLE": 3325
-                    }
-
-LANDMARK_INDICES["HEELS"] = (LANDMARK_INDICES["LEFT_HEEL"], 
-                             LANDMARK_INDICES["RIGHT_HEEL"])
-
 
 class MeasurementType():
     CIRCUMFERENCE = "circumference"
     LENGTH = "length"
 
-class MeasurementDefinitions():
+
+MEASUREMENT_TYPES = {
+        "height": MeasurementType.LENGTH,
+        "head circumference": MeasurementType.CIRCUMFERENCE,
+        "neck circumference": MeasurementType.CIRCUMFERENCE,
+        "shoulder to crotch height": MeasurementType.LENGTH,
+        "chest circumference": MeasurementType.CIRCUMFERENCE,
+        "waist circumference": MeasurementType.CIRCUMFERENCE,
+        "hip circumference": MeasurementType.CIRCUMFERENCE,
+
+        "wrist right circumference": MeasurementType.CIRCUMFERENCE,
+        "bicep right circumference": MeasurementType.CIRCUMFERENCE,
+        "forearm right circumference": MeasurementType.CIRCUMFERENCE,
+        "arm right length": MeasurementType.LENGTH,
+        "inside leg height": MeasurementType.LENGTH,
+        "thigh left circumference": MeasurementType.CIRCUMFERENCE,
+        "calf left circumference": MeasurementType.CIRCUMFERENCE,
+        "ankle left circumference": MeasurementType.CIRCUMFERENCE,
+        "shoulder breadth": MeasurementType.LENGTH,
+    }
+
+class SMPLMeasurementDefinitions():
     '''
     Definition of SMPL landmarks and measurements.
 
@@ -110,51 +70,31 @@ class MeasurementDefinitions():
        face segmentation.
     '''
 
-    measurement_types = {
-        "height": MeasurementType.LENGTH,
-        "head circumference": MeasurementType.CIRCUMFERENCE,
-        "neck circumference": MeasurementType.CIRCUMFERENCE,
-        "shoulder to crotch height": MeasurementType.LENGTH,
-        "chest circumference": MeasurementType.CIRCUMFERENCE,
-        "waist circumference": MeasurementType.CIRCUMFERENCE,
-        "hip circumference": MeasurementType.CIRCUMFERENCE,
-
-        "wrist right circumference": MeasurementType.CIRCUMFERENCE,
-        "bicep right circumference": MeasurementType.CIRCUMFERENCE,
-        "forearm right circumference": MeasurementType.CIRCUMFERENCE,
-        "arm right length": MeasurementType.LENGTH,
-        "inside leg height": MeasurementType.LENGTH,
-        "thigh left circumference": MeasurementType.CIRCUMFERENCE,
-        "calf left circumference": MeasurementType.CIRCUMFERENCE,
-        "ankle left circumference": MeasurementType.CIRCUMFERENCE,
-        "shoulder breadth": MeasurementType.LENGTH,
-    }
-
-    possible_measurements = measurement_types.keys()
+    possible_measurements = MEASUREMENT_TYPES.keys()
     
     LENGTHS = {"height": 
-                    (LANDMARK_INDICES["HEAD_TOP"], 
-                     LANDMARK_INDICES["HEELS"]
+                    (SMPL_LANDMARK_INDICES["HEAD_TOP"], 
+                     SMPL_LANDMARK_INDICES["HEELS"]
                      ),
                "shoulder to crotch height": 
-                    (LANDMARK_INDICES["SHOULDER_TOP"], 
-                     LANDMARK_INDICES["INSEAM_POINT"]
+                    (SMPL_LANDMARK_INDICES["SHOULDER_TOP"], 
+                     SMPL_LANDMARK_INDICES["INSEAM_POINT"]
                     ),
                 "arm left length": 
-                    (LANDMARK_INDICES["LEFT_SHOULDER"], 
-                     LANDMARK_INDICES["LEFT_WRIST"]
+                    (SMPL_LANDMARK_INDICES["LEFT_SHOULDER"], 
+                     SMPL_LANDMARK_INDICES["LEFT_WRIST"]
                     ),
                 "arm right length":
-                    (LANDMARK_INDICES["RIGHT_SHOULDER"], 
-                     LANDMARK_INDICES["RIGHT_WRIST"]
+                    (SMPL_LANDMARK_INDICES["RIGHT_SHOULDER"], 
+                     SMPL_LANDMARK_INDICES["RIGHT_WRIST"]
                     ),
                 "inside leg height": 
-                    (LANDMARK_INDICES["LOW_LEFT_HIP"], 
-                     LANDMARK_INDICES["LEFT_ANKLE"]
+                    (SMPL_LANDMARK_INDICES["LOW_LEFT_HIP"], 
+                     SMPL_LANDMARK_INDICES["LEFT_ANKLE"]
                     ),
                 "shoulder breadth": 
-                    (LANDMARK_INDICES["LEFT_SHOULDER"], 
-                     LANDMARK_INDICES["RIGHT_SHOULDER"]
+                    (SMPL_LANDMARK_INDICES["LEFT_SHOULDER"], 
+                     SMPL_LANDMARK_INDICES["RIGHT_SHOULDER"]
                     ),
                }
 
