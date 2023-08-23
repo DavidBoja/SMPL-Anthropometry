@@ -385,7 +385,6 @@ if __name__ == "__main__":
 
     model_type = "smpl"
     measurer = MeasureBody(model_type)
-    measurer.__init__()
 
     betas = torch.zeros((1, 10), dtype=torch.float32)
     measurer.from_smpl(gender="MALE", shape=betas)
