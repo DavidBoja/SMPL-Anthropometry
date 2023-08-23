@@ -1,3 +1,6 @@
+import smplx
+import torch
+import os
 
 SMPL_NUM_JOINTS = 24
 
@@ -30,3 +33,27 @@ SMPL_IND2JOINT = {
 }
 
 SMPL_JOINT2IND = {name:ind for ind,name in SMPL_IND2JOINT.items()}
+
+
+
+def get_joint_regressor(body_model_type, body_model_root, gender="MALE", num_thetas=24):
+    '''
+    Extract joint regressor from SMPL body model
+    :param body_model_type: str of body model type (smpl or smplx, etc.)
+    :param body_model_root: str of location of folders where smpl/smplx 
+                            inside which .pkl models 
+    
+    Return:
+    :param model.J_regressor: torch.tensor (23,N) used to 
+                              multiply with body model to get 
+                              joint locations
+    '''
+
+    model = smplx.create(model_path=body_model_root, 
+                        model_type=body_model_type,
+                        gender=gender, 
+                        use_face_contour=False,
+                        num_betas=10,
+                        body_pose=torch.zeros((1, num_thetas-1 * 3)),
+                        ext='pkl')
+    return model.J_regressor

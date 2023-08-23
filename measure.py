@@ -6,190 +6,79 @@ import torch
 import smplx
 from pprint import pprint
 import os
+
 from measurement_definitions import *
 from utils import *
 from visualize import Visualizer
+from landmark_definitions import *
+from joint_definitions import *
+
 
 
 def set_shape(model, shape_coefs):
     '''
-    Set shape of SMPL model.
-    :param model: SMPL body model
+    Set shape of body model.
+    :param model: smplx body model
     :param shape_coefs: torch.tensor dim (10,)
 
     Return
-    shaped SMPL body model
+    shaped smplx body model
     '''
     shape_coefs = shape_coefs.to(torch.float32)
     return model(betas=shape_coefs, return_verts=True)
 
-def create_model(smpl_path, gender, num_coefs=10):
+def create_model(model_type, model_root, gender, num_betas=10, num_thetas=24):
     '''
-    Create SMPL body model
-    :param smpl_path: str of location to SMPL .pkl models
+    Create SMPL/SMPLX/etc. body model
+    :param model_type: str of model type: smpl, smplx, etc.
+    :param model_root: str of location where there are smpl/smplx/etc. folders with .pkl models
+                        (clumsy definition in smplx package)
     :param gender: str of gender: MALE or FEMALE or NEUTRAL
-    :param num_coefs: int of number of SMPL shape coefficients
-                      requires the model with num_coefs in smpl_path
+    :param num_betas: int of number of shape coefficients
+                      requires the model with num_coefs in model_root
+    :param num_thetas: int of number of pose coefficients
     
     Return:
-    :param SMPL body model
+    :param smplx body model (SMPL, SMPLX, etc.)
     '''
     
-    body_pose = torch.zeros((1, (SMPL_NUM_KPTS-1) * 3))
-    if smpl_path.split("/")[-1] == "smpl":
-        smpl_path = os.path.dirname(smpl_path)
+    body_pose = torch.zeros((1, (num_thetas-1) * 3))
     
-    return smplx.create(smpl_path, 
-                        model_type="smpl",
+    return smplx.create(model_path=model_root,
+                        model_type=model_type,
                         gender=gender, 
                         use_face_contour=False,
-                        num_betas=num_coefs,
+                        num_betas=num_betas,
                         body_pose=body_pose,
                         ext='pkl')
 
-def get_SMPL_joint_regressor(smpl_path):
+
+
+class Measurer():
     '''
-    Extract joint regressor from SMPL body model
-    :param smpl_path: str of location to SMPL .pkl models
-    
-    Return:
-    :param model.J_regressor: torch.tensor (23,6890) used to 
-                              multiply with body model to get 
-                              joint locations
-    '''
-
-    if smpl_path.split("/")[-1] == "smpl":
-        smpl_path = os.path.dirname(smpl_path)
-
-    model = smplx.create(smpl_path, 
-                    model_type="smpl",
-                    gender="MALE", 
-                    use_face_contour=False,
-                    num_betas=10,
-                    body_pose=torch.zeros((1, 23 * 3)),
-                    ext='pkl')
-    return model.J_regressor
-
-
-class MeasureSMPL():
-    '''
-    Measure the SMPL model defined either by the shape parameters or
-    by its 6890 vertices. 
+    Measure a parametric body model defined either.
+    Parent class for Measure{SMPL,SMPLX,..}.
 
     All the measurements are expressed in cm.
     '''
 
-    def __init__(self,
-                 smpl_path: str
-                ):
-        self.smpl_path = smpl_path
-
+    def __init__(self):
         self.verts = None
-        self.faces = smplx.SMPL(os.path.join(self.smpl_path,"smpl")).faces
+        self.faces = None
         self.joints = None
         self.gender = None
-
-        self.face_segmentation = load_face_segmentation(self.smpl_path)
 
         self.measurements = {}
         self.height_normalized_measurements = {}
         self.labeled_measurements = {}
         self.height_normalized_labeled_measurements = {}
         self.labels2names = {}
-        self.landmarks = LANDMARK_INDICES
-        self.measurement_types = MeasurementDefinitions().measurement_types
-        self.length_definitions = MeasurementDefinitions().LENGTHS
-        self.circumf_definitions = MeasurementDefinitions().CIRCUMFERENCES
-        self.circumf_2_bodypart = MeasurementDefinitions().CIRCUMFERENCE_TO_BODYPARTS
-        self.cached_visualizations = {"LENGTHS":{}, "CIRCUMFERENCES":{}}
-        self.all_possible_measurements = MeasurementDefinitions().possible_measurements
 
-        # FIXME: this needs to be defined in init depending on model
-        self.joint2ind = JOINT2IND
+    def from_verts(self):
+        pass
 
-    def from_verts(self,
-                   verts: torch.tensor):
-        '''
-        Construct body model from only vertices.
-        :param verts: torch.tensor (6890,3) of SMPL vertices
-        '''        
-
-        assert verts.shape == torch.Size([6890,3]), "verts need to be of dimension (6890,3)"
-
-        joint_regressor = get_SMPL_joint_regressor(self.smpl_path)
-        joints = torch.matmul(joint_regressor, verts)
-        self.joints = joints.numpy()
-        self.verts = verts.numpy()
-
-    def from_smpl(self,
-                  gender: str,
-                  shape: torch.tensor):
-        '''
-        Construct body model from given gender and shape params 
-        of SMPl model.
-        :param gender: str, MALE or FEMALE or NEUTRAL
-        :param shape: torch.tensor, (1,10) beta parameters
-                                    for SMPL model
-        '''  
-        model = create_model(self.smpl_path,gender)    
-        model_output = set_shape(model, shape)
-        
-        self.verts = model_output.vertices.detach().cpu().numpy().squeeze()
-        self.joints = model_output.joints.squeeze().detach().cpu().numpy()
-        self.gender = gender
-
-    def visualize(self,
-                 measurement_names: List[str] = [], 
-                 landmark_names: List[str] = [],
-                 title="Measurement visualization",
-                 visualize_body: bool = True,
-                 visualize_landmarks: bool = True,
-                 visualize_joints: bool = True,
-                 visualize_measurements: bool=True):
-
-        # TODO: create default model if not defined
-        # if self.verts is None:
-        #     print("Model has not been defined. \
-        #           Visualizing on default male model")
-        #     model = create_model(self.smpl_path, "MALE", num_coefs=10)
-        #     shape = torch.zeros((1, 10), dtype=torch.float32)
-        #     model_output = set_shape(model, shape)
-            
-        #     verts = model_output.vertices.detach().cpu().numpy().squeeze()
-        #     faces = model.faces.squeeze()
-        # else:
-        #     verts = self.verts
-        #     faces = self.faces 
-
-        if measurement_names == []:
-            measurement_names = self.all_possible_measurements
-
-        if landmark_names == []:
-            landmark_names = list(self.landmarks.keys())
-
-        vizz = Visualizer(verts=self.verts,
-                        faces=self.faces,
-                        joints=self.joints,
-                        landmarks=self.landmarks,
-                        measurements=self.measurements,
-                        measurement_types=self.measurement_types,
-                        length_definitions=self.length_definitions,
-                        circumf_definitions=self.circumf_definitions,
-                        joint2ind=self.joint2ind,
-                        circumf_2_bodypart=self.circumf_2_bodypart,
-                        face_segmentation=self.face_segmentation,
-                        visualize_body=visualize_body,
-                        visualize_landmarks=visualize_landmarks,
-                        visualize_joints=visualize_joints,
-                        visualize_measurements=visualize_measurements,
-                        title=title
-                        )
-        
-        vizz.visualize(measurement_names=measurement_names,
-                       landmark_names=landmark_names,
-                       title=title)
-
-
+    def from_smpl(self):
+        pass
 
     def measure(self, 
                 measurement_names: List[str]
@@ -283,7 +172,7 @@ class MeasureSMPL():
         circumf_landmarks = measurement_definition["LANDMARKS"]
         circumf_landmark_indices = [self.landmarks[l_name] for l_name in circumf_landmarks]
         circumf_n1, circumf_n2 = self.circumf_definitions[measurement_name]["JOINTS"]
-        circumf_n1, circumf_n2 = JOINT2IND[circumf_n1], JOINT2IND[circumf_n2]
+        circumf_n1, circumf_n2 = self.joint2ind[circumf_n1], self.joint2ind[circumf_n2]
         
         plane_origin = np.mean(self.verts[circumf_landmark_indices,:],axis=0)
         plane_normal = self.joints[circumf_n1,:] - self.joints[circumf_n2,:]
@@ -362,17 +251,146 @@ class MeasureSMPL():
             self.labeled_measurements[set_label] = self.measurements[set_name]
             self.labels2names[set_label] = set_name
 
+    def visualize(self,
+                 measurement_names: List[str] = [], 
+                 landmark_names: List[str] = [],
+                 title="Measurement visualization",
+                 visualize_body: bool = True,
+                 visualize_landmarks: bool = True,
+                 visualize_joints: bool = True,
+                 visualize_measurements: bool=True):
+
+        # TODO: create default model if not defined
+        # if self.verts is None:
+        #     print("Model has not been defined. \
+        #           Visualizing on default male model")
+        #     model = create_model(self.smpl_path, "MALE", num_coefs=10)
+        #     shape = torch.zeros((1, 10), dtype=torch.float32)
+        #     model_output = set_shape(model, shape)
+            
+        #     verts = model_output.vertices.detach().cpu().numpy().squeeze()
+        #     faces = model.faces.squeeze()
+        # else:
+        #     verts = self.verts
+        #     faces = self.faces 
+
+        if measurement_names == []:
+            measurement_names = self.all_possible_measurements
+
+        if landmark_names == []:
+            landmark_names = list(self.landmarks.keys())
+
+        vizz = Visualizer(verts=self.verts,
+                        faces=self.faces,
+                        joints=self.joints,
+                        landmarks=self.landmarks,
+                        measurements=self.measurements,
+                        measurement_types=self.measurement_types,
+                        length_definitions=self.length_definitions,
+                        circumf_definitions=self.circumf_definitions,
+                        joint2ind=self.joint2ind,
+                        circumf_2_bodypart=self.circumf_2_bodypart,
+                        face_segmentation=self.face_segmentation,
+                        visualize_body=visualize_body,
+                        visualize_landmarks=visualize_landmarks,
+                        visualize_joints=visualize_joints,
+                        visualize_measurements=visualize_measurements,
+                        title=title
+                        )
+        
+        vizz.visualize(measurement_names=measurement_names,
+                       landmark_names=landmark_names,
+                       title=title)
+
+
+
+class MeasureSMPL(Measurer):
+    '''
+    Measure the SMPL model defined either by the shape parameters or
+    by its 6890 vertices. 
+
+    All the measurements are expressed in cm.
+    '''
+
+    def __init__(self):
+        
+        super().__init__()
+
+        self.model_type = "smpl"
+        self.body_model_root = "data"
+        self.body_model_path = os.path.join(self.body_model_root, 
+                                            self.model_type)
+
+        self.faces = smplx.SMPL(self.body_model_path).faces
+        self.face_segmentation = load_face_segmentation(self.body_model_path)
+
+        self.landmarks = SMPL_LANDMARK_INDICES
+        self.measurement_types = MEASUREMENT_TYPES
+        self.length_definitions = SMPLMeasurementDefinitions().LENGTHS
+        self.circumf_definitions = SMPLMeasurementDefinitions().CIRCUMFERENCES
+        self.circumf_2_bodypart = SMPLMeasurementDefinitions().CIRCUMFERENCE_TO_BODYPARTS
+        self.all_possible_measurements = SMPLMeasurementDefinitions().possible_measurements
+
+        self.joint2ind = SMPL_JOINT2IND
+        self.num_joints = SMPL_NUM_JOINTS
+
+    def from_verts(self,
+                   verts: torch.tensor):
+        '''
+        Construct body model from only vertices.
+        :param verts: torch.tensor (6890,3) of SMPL vertices
+        '''        
+
+        assert verts.shape == torch.Size([6890,3]), "verts need to be of dimension (6890,3)"
+
+        joint_regressor = get_joint_regressor(self.body_model_path)
+        joints = torch.matmul(joint_regressor, verts)
+        self.joints = joints.numpy()
+        self.verts = verts.numpy()
+
+    def from_smpl(self,
+                  gender: str,
+                  shape: torch.tensor):
+        '''
+        Construct body model from given gender and shape params 
+        of SMPl model.
+        :param gender: str, MALE or FEMALE or NEUTRAL
+        :param shape: torch.tensor, (1,10) beta parameters
+                                    for SMPL model
+        '''  
+
+        model = create_model(model_type=self.model_type, 
+                             model_root=self.body_model_root, 
+                             gender=gender,
+                             num_betas=10,
+                             num_thetas=self.num_joints)    
+        model_output = set_shape(model, shape)
+        
+        self.verts = model_output.vertices.detach().cpu().numpy().squeeze()
+        self.joints = model_output.joints.squeeze().detach().cpu().numpy()
+        self.gender = gender
+
+
+
+class MeasureBody():
+    def __new__(cls, model_type):
+        if model_type == 'smpl':
+            return MeasureSMPL()
+        else:
+            raise NotImplementedError("Model type not defined")
+
 
 
 if __name__ == "__main__":
 
-    smpl_path = "/SMPL-Anthropometry/data/SMPL"
-    measurer = MeasureSMPL(smpl_path=smpl_path)
+    model_type = "smpl"
+    measurer = MeasureBody(model_type)
+    measurer.__init__()
 
     betas = torch.zeros((1, 10), dtype=torch.float32)
     measurer.from_smpl(gender="MALE", shape=betas)
 
-    measurement_names = MeasurementDefinitions.possible_measurements
+    measurement_names = SMPLMeasurementDefinitions().possible_measurements
     measurer.measure(measurement_names)
     print("Measurements")
     pprint(measurer.measurements)

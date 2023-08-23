@@ -1,4 +1,3 @@
 
-data/SMPL/smpl/*
-!data/SMPL/smpl/.gitkeep 
 __pycache__/*
+data/smpl/*.pkl
