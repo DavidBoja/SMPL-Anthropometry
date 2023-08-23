@@ -351,9 +351,9 @@ class MeasureSMPL(Measurer):
         self.joints = joints.numpy()
         self.verts = verts.numpy()
 
-    def from_smpl(self,
-                  gender: str,
-                  shape: torch.tensor):
+    def from_body_model(self,
+                        gender: str,
+                        shape: torch.tensor):
         '''
         Construct body model from given gender and shape params 
         of SMPl model.
