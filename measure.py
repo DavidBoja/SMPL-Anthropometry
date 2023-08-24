@@ -458,6 +458,7 @@ class MeasureSMPLX(Measurer):
 
 class MeasureBody():
     def __new__(cls, model_type):
+        model_type = model_type.lower()
         if model_type == 'smpl':
             return MeasureSMPL()
         elif model_type == 'smplx':
