@@ -6,6 +6,7 @@ import torch
 import smplx
 from pprint import pprint
 import os
+import argparse
 
 from measurement_definitions import *
 from utils import *
@@ -42,14 +43,14 @@ def create_model(model_type, model_root, gender, num_betas=10, num_thetas=24):
     :param smplx body model (SMPL, SMPLX, etc.)
     '''
     
-    body_pose = torch.zeros((1, (num_thetas-1) * 3))
+    #body_pose = torch.zeros((1, (num_thetas-1) * 3))
     
     return smplx.create(model_path=model_root,
                         model_type=model_type,
                         gender=gender, 
                         use_face_contour=False,
                         num_betas=num_betas,
-                        body_pose=body_pose,
+                        #body_pose=body_pose,
                         ext='pkl')
 
 
@@ -77,7 +78,7 @@ class Measurer():
     def from_verts(self):
         pass
 
-    def from_smpl(self):
+    def from_body_model(self):
         pass
 
     def measure(self, 
@@ -303,7 +304,6 @@ class Measurer():
                        title=title)
 
 
-
 class MeasureSMPL(Measurer):
     '''
     Measure the SMPL model defined either by the shape parameters or
@@ -321,8 +321,10 @@ class MeasureSMPL(Measurer):
         self.body_model_path = os.path.join(self.body_model_root, 
                                             self.model_type)
 
-        self.faces = smplx.SMPL(self.body_model_path).faces
-        self.face_segmentation = load_face_segmentation(self.body_model_path)
+        self.faces = smplx.SMPL(self.body_model_path, ext="pkl").faces
+        face_segmentation_path = os.path.join(self.body_model_path,
+                                              f"{self.model_type}_body_parts_2_faces.json")
+        self.face_segmentation = load_face_segmentation(face_segmentation_path)
 
         self.landmarks = SMPL_LANDMARK_INDICES
         self.measurement_types = MEASUREMENT_TYPES
@@ -334,6 +336,8 @@ class MeasureSMPL(Measurer):
         self.joint2ind = SMPL_JOINT2IND
         self.num_joints = SMPL_NUM_JOINTS
 
+        self.num_points = 6890
+
     def from_verts(self,
                    verts: torch.tensor):
         '''
@@ -341,11 +345,13 @@ class MeasureSMPL(Measurer):
         :param verts: torch.tensor (6890,3) of SMPL vertices
         '''        
 
-        assert verts.shape == torch.Size([6890,3]), "verts need to be of dimension (6890,3)"
+        verts = verts.squeeze()
+        error_msg = f"verts need to be of dimension ({self.num_points},3)"
+        assert verts.shape == torch.Size([self.num_points,3]), error_msg
 
         joint_regressor = get_joint_regressor(self.model_type, 
                                               self.body_model_root,
-                                              gender="MALE", 
+                                              gender="NEUTRAL", 
                                               num_thetas=self.num_joints)
         joints = torch.matmul(joint_regressor, verts)
         self.joints = joints.numpy()
@@ -374,11 +380,88 @@ class MeasureSMPL(Measurer):
         self.gender = gender
 
 
+class MeasureSMPLX(Measurer):
+    '''
+    Measure the SMPLX model defined either by the shape parameters or
+    by its 10475 vertices. 
+
+    All the measurements are expressed in cm.
+    '''
+
+    def __init__(self):
+        
+        super().__init__()
+
+        self.model_type = "smplx"
+        self.body_model_root = "data"
+        self.body_model_path = os.path.join(self.body_model_root, 
+                                            self.model_type)
+
+        self.faces = smplx.SMPLX(self.body_model_path, ext="pkl").faces
+        face_segmentation_path = os.path.join(self.body_model_path,
+                                              f"{self.model_type}_body_parts_2_faces.json")
+        self.face_segmentation = load_face_segmentation(face_segmentation_path)
+
+        self.landmarks = SMPLX_LANDMARK_INDICES
+        self.measurement_types = MEASUREMENT_TYPES
+        self.length_definitions = SMPLXMeasurementDefinitions().LENGTHS
+        self.circumf_definitions = SMPLXMeasurementDefinitions().CIRCUMFERENCES
+        self.circumf_2_bodypart = SMPLXMeasurementDefinitions().CIRCUMFERENCE_TO_BODYPARTS
+        self.all_possible_measurements = SMPLXMeasurementDefinitions().possible_measurements
+
+        self.joint2ind = SMPLX_JOINT2IND
+        self.num_joints = SMPLX_NUM_JOINTS
+
+        self.num_points = 10475
+
+    def from_verts(self,
+                   verts: torch.tensor):
+        '''
+        Construct body model from only vertices.
+        :param verts: torch.tensor (10475,3) of SMPLX vertices
+        '''        
+
+        verts = verts.squeeze()
+        error_msg = f"verts need to be of dimension ({self.num_points},3)"
+        assert verts.shape == torch.Size([self.num_points,3]), error_msg
+
+        joint_regressor = get_joint_regressor(self.model_type, 
+                                              self.body_model_root,
+                                              gender="NEUTRAL", 
+                                              num_thetas=self.num_joints)
+        joints = torch.matmul(joint_regressor, verts)
+        self.joints = joints.numpy()
+        self.verts = verts.numpy()
+
+    def from_body_model(self,
+                        gender: str,
+                        shape: torch.tensor):
+        '''
+        Construct body model from given gender and shape params 
+        of SMPl model.
+        :param gender: str, MALE or FEMALE or NEUTRAL
+        :param shape: torch.tensor, (1,10) beta parameters
+                                    for SMPL model
+        '''  
+
+        model = create_model(model_type=self.model_type, 
+                             model_root=self.body_model_root, 
+                             gender=gender,
+                             num_betas=10,
+                             num_thetas=self.num_joints)    
+        model_output = set_shape(model, shape)
+        
+        self.verts = model_output.vertices.detach().cpu().numpy().squeeze()
+        self.joints = model_output.joints.squeeze().detach().cpu().numpy()
+        self.gender = gender
+
 
 class MeasureBody():
     def __new__(cls, model_type):
         if model_type == 'smpl':
             return MeasureSMPL()
+        elif model_type == 'smplx':
+            return MeasureSMPLX()
         else:
             raise NotImplementedError("Model type not defined")
 
@@ -386,19 +469,33 @@ class MeasureBody():
 
 if __name__ == "__main__":
 
-    model_type = "smpl"
-    measurer = MeasureBody(model_type)
+    parser = argparse.ArgumentParser(description='Measure body models.')
+    parser.add_argument('--measure_neutral_smpl_with_mean_shape', action='store_true',
+                        help="Measure a mean shape smpl model.")
+    parser.add_argument('--measure_neutral_smplx_with_mean_shape', action='store_true',
+                        help="Measure a mean shape smplx model.")
+    args = parser.parse_args()
 
-    betas = torch.zeros((1, 10), dtype=torch.float32)
-    measurer.from_smpl(gender="MALE", shape=betas)
+    model_types_to_measure = []
+    if args.measure_neutral_smpl_with_mean_shape:
+        model_types_to_measure.append("smpl")
+    elif args.measure_neutral_smplx_with_mean_shape:
+        model_types_to_measure.append("smplx")
 
-    measurement_names = SMPLMeasurementDefinitions().possible_measurements
-    measurer.measure(measurement_names)
-    print("Measurements")
-    pprint(measurer.measurements)
+    for model_type in model_types_to_measure:
+        print(f"Measuring {model_type} body model")
+        measurer = MeasureBody(model_type)
 
-    measurer.label_measurements(STANDARD_LABELS)
-    print("Labeled measurements")
-    pprint(measurer.labeled_measurements)
+        betas = torch.zeros((1, 10), dtype=torch.float32)
+        measurer.from_body_model(gender="NEUTRAL", shape=betas)
 
-    measurer.visualize()
+        measurement_names = measurer.all_possible_measurements
+        measurer.measure(measurement_names)
+        print("Measurements")
+        pprint(measurer.measurements)
+
+        measurer.label_measurements(STANDARD_LABELS)
+        print("Labeled measurements")
+        pprint(measurer.labeled_measurements)
+
+        measurer.visualize()
