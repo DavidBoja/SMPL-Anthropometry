@@ -5,9 +5,19 @@ import plotly
 import plotly.graph_objects as go
 import plotly.express as px
 import trimesh
+import argparse
+import smplx
+import json
+import torch
+#import ipywidgets as widgets
+from plotly.subplots import make_subplots
+
+
 
 from measurement_definitions import MeasurementType
 from utils import convex_hull_from_3D_points, filter_body_part_slices
+from joint_definitions import SMPL_IND2JOINT, SMPLX_IND2JOINT
+from landmark_definitions import SMPL_LANDMARK_INDICES, SMPLX_LANDMARK_INDICES
 
 class Visualizer():
     '''
@@ -361,4 +371,526 @@ class Visualizer():
                             title=title,
                             )
             
+        fig.show()
+
+
+def viz_smplx_joints(visualize_body=True,fig=None,show=True,title="SMPLX joints"):
+    """
+    Visualize smpl joints on the same plot.
+    :param visualize_body: bool, whether to visualize the body or not.
+    :param fig: plotly Figure object, if None, create new figure.
+    """
+
+    betas = torch.zeros((1, 10), dtype=torch.float32)
+
+    smplx_model =  smplx.create(model_path="data",
+                                model_type="smplx",
+                                gender="NEUTRAL", 
+                                use_face_contour=False,
+                                num_betas=10,
+                                #body_pose=torch.zeros((1, (55-1) * 3)),
+                                ext='pkl')
+    
+    smplx_model = smplx_model(betas=betas, return_verts=True)
+    smplx_joints = smplx_model.joints.detach().numpy()[0]
+    smplx_joint_pelvis = smplx_joints[0,:]
+    smplx_joints = smplx_joints - smplx_joint_pelvis
+    smplx_vertices = smplx_model.vertices.detach().numpy()[0]
+    smplx_vertices = smplx_vertices - smplx_joint_pelvis
+    smplx_faces = smplx.SMPLX("data/smplx",ext="pkl").faces
+
+    joint_colors = px.colors.qualitative.Alphabet + \
+                   px.colors.qualitative.Dark24 + \
+                   px.colors.qualitative.Alphabet + \
+                   px.colors.qualitative.Dark24 + \
+                   px.colors.qualitative.Alphabet + \
+                   ["#000000"]
+    
+    if isinstance(fig,type(None)):
+        fig = go.Figure()
+
+    for i in range(smplx_joints.shape[0]):
+
+        if i in SMPLX_IND2JOINT.keys():
+            joint_name = SMPLX_IND2JOINT[i]
+        else:
+            joint_name = f"noname-{i}"
+
+        joint_plot = go.Scatter3d(x = [smplx_joints[i,0]],
+                                    y = [smplx_joints[i,1]], 
+                                    z = [smplx_joints[i,2]], 
+                                    mode='markers',
+                                    marker=dict(size=10,
+                                                color=joint_colors[i],
+                                                opacity=1,
+                                                symbol="circle"
+                                                ),
+                                    name="smplx-"+joint_name
+                                        )
+
+
+        fig.add_trace(joint_plot)
+
+
+    if visualize_body:
+        plot_body = go.Mesh3d(
+                            x=smplx_vertices[:,0],
+                            y=smplx_vertices[:,1],
+                            z=smplx_vertices[:,2],
+                            color = "yellow",
+                            i=smplx_faces[:,0],
+                            j=smplx_faces[:,1],
+                            k=smplx_faces[:,2],
+                            name='smplx mesh',
+                            showscale=True,
+                            opacity=0.8
+                        )
+        fig.add_trace(plot_body)
+
+    fig.update_layout(scene_aspectmode='data',
+                        width=1000, height=700,
+                        title=title,
+                        )
+    
+
+    if show:
+        fig.show()
+    else:
+        return fig
+
+
+def viz_smpl_joints(visualize_body=True,fig=None,show=True,title="SMPL joints"):
+    """
+    Visualize smpl joints on the same plot.
+    :param visualize_body: bool, whether to visualize the body or not.
+    :param fig: plotly Figure object, if None, create new figure.
+    """
+
+    betas = torch.zeros((1, 10), dtype=torch.float32)
+    
+    smpl_model =  smplx.create(model_path="data",
+                                model_type="smpl",
+                                gender="NEUTRAL", 
+                                use_face_contour=False,
+                                num_betas=10,
+                                ext='pkl')
+    
+    smpl_model = smpl_model(betas=betas, return_verts=True)
+    smpl_joints = smpl_model.joints.detach().numpy()[0]
+    smpl_joints_pelvis = smpl_joints[0,:]
+    smpl_joints = smpl_joints - smpl_joints_pelvis
+    smpl_vertices = smpl_model.vertices.detach().numpy()[0]
+    smpl_vertices = smpl_vertices - smpl_joints_pelvis
+    smpl_faces = smplx.SMPL("data/smpl",ext="pkl").faces
+
+
+    joint_colors = px.colors.qualitative.Alphabet + \
+                   px.colors.qualitative.Dark24 + \
+                   px.colors.qualitative.Alphabet + \
+                   px.colors.qualitative.Dark24 + \
+                   px.colors.qualitative.Alphabet + \
+                   ["#000000"]
+    
+    if isinstance(fig,type(None)):
+        fig = go.Figure()
+
+    for i in range(smpl_joints.shape[0]):
+
+        if i in SMPL_IND2JOINT.keys():
+            joint_name = SMPL_IND2JOINT[i]
+        else:
+            joint_name = f"noname-{i}"
+
+        joint_plot = go.Scatter3d(x = [smpl_joints[i,0]],
+                                    y = [smpl_joints[i,1]], 
+                                    z = [smpl_joints[i,2]], 
+                                    mode='markers',
+                                    marker=dict(size=10,
+                                                color=joint_colors[i],
+                                                opacity=1,
+                                                symbol="cross"
+                                                ),
+                                    name="smpl-"+joint_name
+                                        )
+
+
+        fig.add_trace(joint_plot)
+
+    if visualize_body:
+        plot_body = go.Mesh3d(
+                            x=smpl_vertices[:,0],
+                            y=smpl_vertices[:,1],
+                            z=smpl_vertices[:,2],
+                            #facecolor=face_colors,
+                            color = "gray",
+                            i=smpl_faces[:,0],
+                            j=smpl_faces[:,1],
+                            k=smpl_faces[:,2],
+                            name='smpl mesh',
+                            showscale=True,
+                            opacity=0.8
+                        )
+        fig.add_trace(plot_body)
+
+    fig.update_layout(scene_aspectmode='data',
+                        width=1000, height=700,
+                        title=title,
+                        )
+    if show:
+        fig.show()
+    else:
+        return fig
+                           
+
+def viz_face_segmentation(verts,faces,face_colors,
+                          title="Segmented body",name="mesh",show=True):
+    """
+    Visualize face segmentation defined in face_colors.
+    :param verts: np.ndarray - (N,3) representing the vertices
+    :param faces: np.ndarray - (F,3) representing the indices of the faces
+    :param face_colors: np.ndarray - (F,3) representing the colors of the faces
+    """
+    
+    import plotly.graph_objects as go
+
+    fig = go.Figure()
+    mesh_plot = go.Mesh3d(
+            x=verts[:,0],
+            y=verts[:,1],
+            z=verts[:,2],
+            facecolor=face_colors,
+            i=faces[:,0],
+            j=faces[:,1],
+            k=faces[:,2],
+            name=name,
+            showscale=True,
+            opacity=1
+        )
+    fig.add_trace(mesh_plot)
+    fig.update_layout(scene_aspectmode='data',
+                        width=1000, height=700,
+                        title=title)
+    
+    if show:
+        fig.show()
+    else:
+        return fig
+
+
+def viz_smpl_face_segmentation(fig=None, show=True, title="SMPL face segmentation"):
+    body = smplx.SMPL("data/smpl",ext="pkl")
+
+    with open("data/smpl/smpl_body_parts_2_faces.json","r") as f:
+        face_segmentation = json.load(f) 
+
+    faces = body.faces
+    verts = body.v_template
+
+    # create colors for each face
+    colors = px.colors.qualitative.Alphabet + \
+            px.colors.qualitative.Dark24
+    mapping_bp2ind = dict(zip(face_segmentation.keys(),
+                            range(len(face_segmentation.keys()))
+                            ))
+    face_colors = [0]*faces.shape[0]
+    for bp_name,bp_indices in face_segmentation.items():
+        bp_label = mapping_bp2ind[bp_name]
+        for i in bp_indices:
+            face_colors[i] = colors[bp_label]
+
+    if isinstance(fig,type(None)):
+        fig = go.Figure()
+
+    fig = viz_face_segmentation(verts,faces,face_colors,title=title,name="smpl",show=False)
+
+    if show:
+        fig.show()
+    else:
+        return fig
+
+
+def viz_smplx_face_segmentation(fig=None,show=True,title="SMPLX face segmentation"):
+    """
+    Visualize face segmentations for smplx.
+    """
+    
+    body = smplx.SMPLX("data/smplx",ext="pkl")
+    
+    with open("data/smplx/smplx_body_parts_2_faces.json","r") as f:
+        face_segmentation = json.load(f) 
+
+
+    faces = body.faces
+    verts = body.v_template
+
+    # create colors for each face
+    colors = px.colors.qualitative.Alphabet + \
+            px.colors.qualitative.Dark24
+    mapping_bp2ind = dict(zip(face_segmentation.keys(),
+                            range(len(face_segmentation.keys()))
+                            ))
+    face_colors = [0]*faces.shape[0]
+    for bp_name,bp_indices in face_segmentation.items():
+        bp_label = mapping_bp2ind[bp_name]
+        for i in bp_indices:
+            face_colors[i] = colors[bp_label]
+
+    if isinstance(fig,type(None)):
+        fig = go.Figure()
+
+    fig = viz_face_segmentation(verts,faces,face_colors,title=title,name="smpl",show=False)
+
+    if show:
+        fig.show()
+    else:
+        return fig
+
+
+def viz_point_segmentation(verts,point_segm,title="Segmented body",fig=None,show=True):
+    """
+    Visualze points and their segmentation defined in dict point_segm.
+    :param verts: np.ndarray - (N,3) representing the vertices
+    :param point_segm: dict - dict mapping body part to all points belonging
+                                to it
+    """
+    colors = px.colors.qualitative.Alphabet + \
+             px.colors.qualitative.Dark24
+    
+    if isinstance(fig,type(None)):
+        fig = go.Figure()
+
+    for i, (body_part, body_indices) in enumerate(point_segm.items()):
+        plot = go.Scatter3d(x = verts[body_indices,0],
+                            y = verts[body_indices,1], 
+                            z = verts[body_indices,2], 
+                            mode='markers',
+                            marker=dict(size=5,
+                                        color=colors[i],
+                                        opacity=1,
+                                        #symbol="cross"
+                                        ),
+                            name=body_part
+                                )
+        fig.add_trace(plot)
+    fig.update_layout(scene_aspectmode='data',
+                    width=1000, height=700,
+                    title=title)
+    if show:
+        fig.show()
+    return fig
+
+
+def viz_smplx_point_segmentation(fig=None,show=True,title="SMPLX point segmentation"):
+    """
+    Visualize point segmentations for smplx.
+    """
+
+    model_path = "data/smplx"
+    smpl_verts = smplx.SMPLX(model_path,ext="pkl").v_template
+    with open("data/smplx/point_segmentation_meshcapade.json","r") as f:
+        point_segm = json.load(f)
+    fig = viz_point_segmentation(smpl_verts,point_segm,title=title,fig=fig,show=show)
+
+    if show:
+        fig.show()
+    else:
+        return fig
+
+
+def viz_smpl_point_segmentation(fig=None,show=True,title="SMPL point segmentation"):
+    """
+    Visualize point segmentations for smpl.
+    """
+
+    model_path = "data/smpl"
+    smpl_verts = smplx.SMPL(model_path,ext="pkl").v_template
+    with open("data/smpl/point_segmentation_meshcapade.json","r") as f:
+        point_segm = json.load(f)
+    fig = viz_point_segmentation(smpl_verts,point_segm,title=title,fig=fig,show=show)
+
+    if show:
+        fig.show()
+    else:
+        return fig
+
+
+def viz_landmarks(verts,landmark_dict,title="Visualize landmarks",fig=None,show=True,name="points"):
+    
+    if isinstance(fig,type(None)):
+        fig = go.Figure()
+
+    plot = go.Scatter3d(x = verts[:,0],
+                        y = verts[:,1], 
+                        z = verts[:,2], 
+                        mode='markers',
+                        hovertemplate ='<i>Index</i>: %{text}',
+                        text = [i for i in range(verts.shape[0])],
+                        marker=dict(size=5,
+                                    color="black",
+                                    opacity=0.2,
+                                    # line=dict(color='black',width=1)
+                                    ),
+                        name=name
+                            )
+    
+    fig.add_trace(plot)
+
+    colors = px.colors.qualitative.Alphabet + \
+             px.colors.qualitative.Dark24  + \
+             px.colors.qualitative.Alphabet + \
+             px.colors.qualitative.Dark24
+    
+    for i, (lm_name, lm_ind) in enumerate(landmark_dict.items()):
+        plot = go.Scatter3d(x = [verts[lm_ind,0]],
+                            y = [verts[lm_ind,1]], 
+                            z = [verts[lm_ind,2]], 
+                            mode='markers',
+                            marker=dict(size=10,
+                                        color=colors[i],
+                                        opacity=1,
+                                        symbol="cross"
+                                        ),
+                            name=name+"-"+lm_name
+                                )
+        fig.add_trace(plot)
+
+    fig.update_layout(scene_aspectmode='data',
+                    width=1000, height=700,
+                    title=title)
+
+    if show:
+        fig.show()
+    else:
+        return fig
+    
+
+def viz_smpl_landmarks(fig=None,show=True,title="SMPL landmarks"):
+    """
+    Visualize smpl landmarks.
+    """
+
+    verts = smplx.SMPL("data/smpl",ext="pkl").v_template
+    landmark_dict = SMPL_LANDMARK_INDICES
+
+    if isinstance(fig,type(None)):
+        fig=go.Figure()
+
+    fig = viz_landmarks(verts,
+                        landmark_dict,
+                        title="Visualize landmarks",
+                        fig=fig,
+                        show=show,
+                        name="smpl")
+
+    if show:
+        fig.show()
+    else:
+        return fig
+
+
+def viz_smplx_landmarks(fig=None,show=True,title="SMPLX landmarks"):
+    """
+    Visualize smplx landmarks.
+    """
+
+    verts = smplx.SMPLX("data/smplx",ext="pkl").v_template
+    landmark_dict = SMPLX_LANDMARK_INDICES
+
+    if isinstance(fig,type(None)):
+        fig=go.Figure()
+
+    fig = viz_landmarks(verts,
+                        landmark_dict,
+                        title="Visualize landmarks",
+                        fig=fig,
+                        show=show,
+                        name="smplx")
+
+    if show:
+        fig.show()
+    else:
+        return fig
+
+    
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='Visualize body models, joints and segmentations..')
+    parser.add_argument('--visualize_smpl_and_smplx_face_segmentation', action='store_true',
+                        help="Visualize face segmentations for smplx model.")
+    parser.add_argument('--visualize_smpl_and_smplx_joints', action='store_true',
+                        help="visualize smpl and smplx joints on same plot.")
+    parser.add_argument('--visualize_smpl_and_smplx_point_segmentation', action='store_true',
+                        help="visualize smpl and smplx point segmentation on two separate plots.")
+    parser.add_argument('--visualize_smpl_and_smplx_landmarks', action='store_true',
+                        help="visualize smpl and smplx landmarks on two separate plots.")
+    args = parser.parse_args()
+
+
+
+    if args.visualize_smpl_and_smplx_face_segmentation:
+        # mesh is not compatible with subplots so these are plotted
+        # onto separate plots
+        viz_smpl_face_segmentation(fig=None, show=True)
+        viz_smplx_face_segmentation(fig=None,show=True)
+
+
+        
+    if args.visualize_smpl_and_smplx_joints: 
+        title = "SMPL and SMPLX joints"
+        fig = viz_smpl_joints(visualize_body=True,
+                              fig=None,
+                              show=False,
+                              title=title)
+        viz_smplx_joints(visualize_body=True,
+                        fig=fig,
+                        show=True,
+                        title=title)
+
+    if args.visualize_smpl_and_smplx_point_segmentation:
+        fig = make_subplots(rows=1, cols=2, 
+                            specs=[[{'type': 'scene'}, 
+                                    {'type': 'scene'}]],
+                            subplot_titles=("SMPL", "SMPLX")) 
+        title="SMPL and SMPLX point segmentation"
+
+
+        fig_smpl = viz_smpl_point_segmentation(fig=None,show=False,title=title)
+        fig_smplx = viz_smplx_point_segmentation(fig=None,show=False,title=title)
+
+
+        for i in range(len(fig_smpl.data)):
+            fig.add_trace(fig_smpl.data[i],row=1,col=1)
+        for i in range(len(fig_smplx.data)):
+            fig.add_trace(fig_smplx.data[i],row=1,col=2)
+
+
+        fig.update_layout(fig_smpl.layout)
+        fig.update_layout(scene2_aspectmode="data",
+                          showlegend=False,
+                          width=1200,
+                          height=700)
+        fig.show()
+    
+    if args.visualize_smpl_and_smplx_landmarks:
+        fig = make_subplots(rows=1, cols=2, 
+                            specs=[[{'type': 'scene'}, 
+                                    {'type': 'scene'}]],
+                            subplot_titles=("SMPL", "SMPLX")) 
+        title="SMPL and SMPLX landmarks"
+
+        fig_smpl = viz_smpl_landmarks(fig=None,show=False,title=title)
+        fig_smplx = viz_smplx_landmarks(fig=None,show=False,title=title)
+
+        for i in range(len(fig_smpl.data)):
+            fig.add_trace(fig_smpl.data[i],row=1,col=1)
+        for i in range(len(fig_smplx.data)):
+            fig.add_trace(fig_smplx.data[i],row=1,col=2)
+
+        
+        fig.update_layout(fig_smpl.layout)
+        fig.update_layout(scene2_aspectmode="data",
+                          showlegend=False,
+                          width=1200,
+                          height=700)
         fig.show()
