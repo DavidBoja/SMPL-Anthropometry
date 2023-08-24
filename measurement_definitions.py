@@ -106,7 +106,7 @@ class SMPLMeasurementDefinitions():
                                "JOINTS":["pelvis","spine3"]},
 
         "neck circumference":{"LANDMARKS":["NECK_ADAM_APPLE"],
-                               "JOINTS":["neck","head"]},
+                               "JOINTS":["spine2","head"]},
         
         "chest circumference":{"LANDMARKS":["LEFT_NIPPLE","RIGHT_NIPPLE"],
                                "JOINTS":["pelvis","spine3"]},
@@ -212,7 +212,7 @@ class SMPLXMeasurementDefinitions():
                                "JOINTS":["pelvis","spine3"]},
 
         "neck circumference":{"LANDMARKS":["NECK_ADAM_APPLE"],
-                               "JOINTS":["neck","head"]},
+                               "JOINTS":["spine1","spine3"]},
         
         "chest circumference":{"LANDMARKS":["LEFT_NIPPLE","RIGHT_NIPPLE"],
                                "JOINTS":["pelvis","spine3"]},
