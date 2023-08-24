@@ -437,13 +437,13 @@ def viz_smplx_joints(visualize_body=True,fig=None,show=True,title="SMPLX joints"
                             x=smplx_vertices[:,0],
                             y=smplx_vertices[:,1],
                             z=smplx_vertices[:,2],
-                            color = "yellow",
+                            color = "red",
                             i=smplx_faces[:,0],
                             j=smplx_faces[:,1],
                             k=smplx_faces[:,2],
                             name='smplx mesh',
                             showscale=True,
-                            opacity=0.8
+                            opacity=0.5
                         )
         fig.add_trace(plot_body)
 
@@ -522,13 +522,13 @@ def viz_smpl_joints(visualize_body=True,fig=None,show=True,title="SMPL joints"):
                             y=smpl_vertices[:,1],
                             z=smpl_vertices[:,2],
                             #facecolor=face_colors,
-                            color = "gray",
+                            color = "blue",
                             i=smpl_faces[:,0],
                             j=smpl_faces[:,1],
                             k=smpl_faces[:,2],
                             name='smpl mesh',
                             showscale=True,
-                            opacity=0.8
+                            opacity=0.5
                         )
         fig.add_trace(plot_body)
 
