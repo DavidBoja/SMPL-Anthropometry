@@ -49,7 +49,7 @@ MEASUREMENT_TYPES = {
 
 class SMPLMeasurementDefinitions():
     '''
-    Definition of SMPL landmarks and measurements.
+    Definition of SMPL measurements.
 
     To add a new measurement:
     1. add it to the measurement_types dict and set the type:
@@ -119,6 +119,112 @@ class SMPLMeasurementDefinitions():
         
         "wrist right circumference":{"LANDMARKS":["RIGHT_WRIST"],
                                     "JOINTS":["right_wrist","right_hand"]},
+        
+        "bicep right circumference":{"LANDMARKS":["RIGHT_BICEP"],
+                                    "JOINTS":["right_shoulder","right_elbow"]},
+
+        "forearm right circumference":{"LANDMARKS":["RIGHT_FOREARM"],
+                                        "JOINTS":["right_elbow","right_wrist"]},
+        
+        "thigh left circumference":{"LANDMARKS":["LEFT_THIGH"],
+                                    "JOINTS":["pelvis","spine3"]},
+        
+        "calf left circumference":{"LANDMARKS":["LEFT_CALF"],
+                                    "JOINTS":["pelvis","spine3"]},
+
+        "ankle left circumference":{"LANDMARKS":["LEFT_ANKLE"],
+                                    "JOINTS":["pelvis","spine3"]},      
+                    
+                    }
+
+    CIRCUMFERENCE_TO_BODYPARTS = {
+        "head circumference": "head",
+        "neck circumference":"neck",
+        "chest circumference":["spine1","spine2"],
+        "waist circumference":["hips","spine"],
+        "hip circumference":"hips",
+        "wrist right circumference":["rightHand","rightForeArm"],
+        "bicep right circumference":"rightArm",
+        "forearm right circumference":"rightForeArm",
+        "thigh left circumference": "leftUpLeg",
+        "calf left circumference": "leftLeg",
+        "ankle left circumference": "leftLeg",
+    }
+
+
+
+class SMPLXMeasurementDefinitions():
+    '''
+    Definition of SMPLX measurements.
+
+    To add a new measurement:
+    1. add it to the measurement_types dict and set the type:
+       LENGTH or CIRCUMFERENCE
+    2. depending on the type, define the measurement in LENGTHS or 
+       CIRCUMFERENCES dict
+       - LENGTHS are defined using 2 landmarks - the measurement is 
+                found with distance between landmarks
+       - CIRCUMFERENCES are defined with landmarks and joints - the 
+                measurement is found by cutting the SMPLX model with the 
+                plane defined by a point (landmark point) and normal (
+                vector connecting the two joints)
+    3. If the body part is a CIRCUMFERENCE, a possible issue that arises is
+       that the plane cutting results in multiple body part slices. To alleviate
+       that, define the body part where the measurement should be located in 
+       CIRCUMFERENCE_TO_BODYPARTS dict. This way, only slice in that body part is
+       used for finding the measurement. The body parts are defined by the SMPL 
+       face segmentation.
+    '''
+
+    possible_measurements = MEASUREMENT_TYPES.keys()
+    
+    LENGTHS = {"height": 
+                    (SMPLX_LANDMARK_INDICES["HEAD_TOP"], 
+                     SMPLX_LANDMARK_INDICES["HEELS"]
+                     ),
+               "shoulder to crotch height": 
+                    (SMPLX_LANDMARK_INDICES["SHOULDER_TOP"], 
+                     SMPLX_LANDMARK_INDICES["INSEAM_POINT"]
+                    ),
+                "arm left length": 
+                    (SMPLX_LANDMARK_INDICES["LEFT_SHOULDER"], 
+                     SMPLX_LANDMARK_INDICES["LEFT_WRIST"]
+                    ),
+                "arm right length":
+                    (SMPLX_LANDMARK_INDICES["RIGHT_SHOULDER"], 
+                     SMPLX_LANDMARK_INDICES["RIGHT_WRIST"]
+                    ),
+                "inside leg height": 
+                    (SMPLX_LANDMARK_INDICES["LOW_LEFT_HIP"], 
+                     SMPLX_LANDMARK_INDICES["LEFT_ANKLE"]
+                    ),
+                "shoulder breadth": 
+                    (SMPLX_LANDMARK_INDICES["LEFT_SHOULDER"], 
+                     SMPLX_LANDMARK_INDICES["RIGHT_SHOULDER"]
+                    ),
+               }
+
+    # defined with landmarks and joints
+    # landmarks are defined with indices of the smpl model points
+    # normals are defined with joint names of the smpl model
+    CIRCUMFERENCES = {
+        "head circumference":{"LANDMARKS":["HEAD_LEFT_TEMPLE"],
+                               "JOINTS":["pelvis","spine3"]},
+
+        "neck circumference":{"LANDMARKS":["NECK_ADAM_APPLE"],
+                               "JOINTS":["neck","head"]},
+        
+        "chest circumference":{"LANDMARKS":["LEFT_NIPPLE","RIGHT_NIPPLE"],
+                               "JOINTS":["pelvis","spine3"]},
+
+        "waist circumference":{"LANDMARKS":["BELLY_BUTTON","BACK_BELLY_BUTTON"],
+                               "JOINTS":["pelvis","spine3"]},
+        
+        "hip circumference":{"LANDMARKS":["PUBIC_BONE"],
+                               "JOINTS":["pelvis","spine3"]},
+        
+        "wrist right circumference":{"LANDMARKS":["RIGHT_WRIST"],
+                                    "JOINTS":["right_wrist","right_elbow"]}, # different from SMPL
         
         "bicep right circumference":{"LANDMARKS":["RIGHT_BICEP"],
                                     "JOINTS":["right_shoulder","right_elbow"]},
