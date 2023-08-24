@@ -21,7 +21,7 @@ SMPL_LANDMARK_INDICES = {"HEAD_TOP": 412,
                     "RIGHT_SHOULDER": 6470,
                     "LOW_LEFT_HIP": 3134,
                     "LEFT_THIGH": 947,
-                    "LEFT_CALF": 1074,
+                    "LEFT_CALF": 1103,
                     "LEFT_ANKLE": 3325
                     }
 
@@ -30,7 +30,7 @@ SMPL_LANDMARK_INDICES["HEELS"] = (SMPL_LANDMARK_INDICES["LEFT_HEEL"],
 
 
 SMPLX_LANDMARK_INDICES = {"HEAD_TOP": 8976,
-                    "HEAD_LEFT_TEMPLE": 1979,
+                    "HEAD_LEFT_TEMPLE": 1980,
                     "NECK_ADAM_APPLE": 8940, 
                     "LEFT_HEEL": 8847,
                     "RIGHT_HEEL": 8635,
