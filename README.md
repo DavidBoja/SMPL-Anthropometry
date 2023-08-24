@@ -1,6 +1,6 @@
 # SMPL-Anthropometry
 
-Measure the SMPL body model and visualize the measurements and landmarks.
+Measure the SMPL/SMPLX body models and visualize the measurements and landmarks.
 
 <p align="center">
   <img src="https://github.com/DavidBoja/SMPL-Anthropometry/blob/master/assets/measurement_visualization.png" width="950">
@@ -8,7 +8,7 @@ Measure the SMPL body model and visualize the measurements and landmarks.
 
 <br>
 
-## Getting started
+## 🔨 Getting started
 You can use a docker container to facilitate running the code. Run in terminal:
 
 ```bash
@@ -21,45 +21,49 @@ by adjusting the `CODE_PATH` to the `SMPL-Anthropometry` directory location. Thi
 
 If you do not want to use a docker container, you can also just install the necessary packages from `docker/requirements.txt` into your own enviroment.
 
-Next, you need to provide the SMPL body models `SMPL_{GENDER}.pkl` (MALE, FEMALE and NEUTRAL), and put them into the `data/SMPL/smpl` folder.
+Next, provide the body models (SMPL or SMPLX) and:
+1. put the `SMPL_{GENDER}.pkl` (MALE, FEMALE and NEUTRAL) models into the `data/smpl` folder
+2. put the `SMPLX_{GENDER}.pkl` (MALE, FEMALE and NEUTRAL) models into the `data/smplx` folder
 
 <br>
 
-## Running
+## 🏃 Running
 
-First import the necessary libraries and define the SMPL bodies path:
+First import the necessary libraries:
 
 ```python
-from measure import MeasureSMPL
-from measurement_definitions import MeasurementDefinitions, STANDARD_LABELS
-
-smpl_path = "/SMPL-Anthropometry/data/SMPL" 
+from measure import MeasureBody
+from measurement_definitions import STANDARD_LABELS
 ```
 <br>
 
-Then, there are two ways of using the code for measuring an SMPL body model depending on how you want to define the body:
+Next define the measurer by setting the body model you want to measure with `model_type` (`smpl` or `smplx`):
+```python
+measurer = MeasureBody(model_type)
+```
+<br>
 
-1. Define the SMPL body using the shape `betas` and gender `gender` parameters:
+Then, there are two ways of using the code for measuring a body model depending on how you want to define the body:
+
+1. Define the body model using the shape `betas` and gender `gender` parameters:
 
 ```python
-measurer = MeasureSMPL(smpl_path=smpl_path) 
-measurer.from_smpl(gender=gender, shape=betas) 
+measurer.from_body_model(gender=gender, shape=betas) 
 ```
 
-2. Define the SMPL body using the 6890 x 3 vertices `verts`:
+2. Define the body model using the N x 3 vertices `verts` (N=6890 if SMPL, and 10475 if SMPLX):
 
 ```python
-measurer = MeasureSMPL(smpl_path=smpl_path) 
 measurer.from_verts(verts=verts) 
 ```
-&nbsp;&nbsp;&nbsp;&nbsp; Defining the body using the vertices can be especially useful when the SMPL vertices have been <br>
-&nbsp;&nbsp;&nbsp;&nbsp; further refined to fit a 2D/3D model and do not satsify perfectly <br>
-&nbsp;&nbsp;&nbsp;&nbsp; a set of shape parameters anymore.
+&nbsp;&nbsp;&nbsp;&nbsp; 📣 Defining the body using the vertices can be especially useful when the SMPL/SMPLX vertices have been <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; further refined to fit a 2D/3D model and do not satsify perfectly a set of shape parameters anymore.<br>
 <br>
 
-Finally, you can measure the SMPL bodies with:
+Finally, you can measure the body with:
 ```python
-measurement_names = MeasurementDefinitions.possible_measurements 
+
+measurement_names = measurer.all_possible_measurements # or chose subset of measurements 
 measurer.measure(measurement_names) 
 measurer.label_measurements(STANDARD_LABELS) 
 ```
@@ -101,16 +105,20 @@ where `measurer1` and `measurer2` are two intances of the `MeasureSMPL` class.
 
 <br>
 
-## Demos
+## 💿 Demos
 
-You can run the `measure.py` script to measure all the predefined measurements (mentioned above) and visualize the results for a zero-shaped T-posed SMPL body model:
+You can run the `measure.py` script to measure all the predefined measurements (mentioned above) and visualize the results for a zero-shaped T-posed neutral gender SMPL body model:
 
-```python
-python measure.py
+```bash
+python measure.py --measure_neutral_smpl_with_mean_shape
 ```
 
 The output consists of a dictionary of measurements expressed in cm, the labeled measurements using standard labels,and the viualization of the measurements in the browser, as in the Figure above.
 
+Similarly, you can measure a zero-shaped T-posed neutral gender SMPLX body model with:
+```bash
+python measure.py --measure_neutral_smplx_with_mean_shape
+```
 
 <br>
 
@@ -124,31 +132,31 @@ The output consists of the mean absolute error (MAE) between two sets of measure
 <br>
 <br>
 
-## Notes
+## 📝 Notes
 
 ### Measurement definitions
 There are two types of measurements: lenghts and circumferences.
-1. Lengths are defined as distances between landmark points defined on the SMPL body
-2. Circumferences are defiend as plane cuts of the SMPL body
+1. Lengths are defined as distances between landmark points defined on the body model
+2. Circumferences are defiend as plane cuts of the body model
 
 To define a new measurement:
 1. Open `measurement_definitions.py`
-1. add the new measurement to the `measurement_types` dict and set its type:
+1. add the new measurement to the `MEASUREMENT_TYPES` dict and set its type:
    `LENGTH` or `CIRCUMFERENCE`
-2. depending on the type, define the measurement in the `LENGTHS` or 
-   `CIRCUMFERENCES` dict
+2. depending on the measurement type, define the measurement in the `LENGTHS` or 
+   `CIRCUMFERENCES` dict of the appropriate body model (`SMPLMeasurementDefinitions` or `SMPLXMeasurementDefinitions`)
    - `LENGTHS` are defined using 2 landmarks - the measurement is 
             found as the distance between the landmarks
    - `CIRCUMFERENCES` are defined with landmarks and joints - the 
-            measurement is found by cutting the SMPL model with the 
+            measurement is found by cutting the body model with the 
             plane defined by a point (landmark point) and normal (
             vector connecting the two joints)
-3. If the body part is a `CIRCUMFERENCE`, a possible issue that arises is
+3. If the measurement is a `CIRCUMFERENCE`, a possible issue that arises is
    that the plane cutting results in multiple body part slices. To alleviate
    that, define the body part where the measurement should be located in 
    `CIRCUMFERENCE_TO_BODYPARTS` dict. This way, only the slice in the corresponding body part is
-   used for finding the measurement. The body parts are defined by the SMPL 
-   face segmentation located in `data/smpl_body_parts_2_faces.json`.
+   used for finding the measurement. The body parts are defined by the 
+   face segmentation located in `data/smpl_body_parts_2_faces.json` or `data/smplx_body_parts_2_faces.json`.
 
 <br>
 
@@ -156,10 +164,10 @@ To define a new measurement:
 If a body model has unknown scale (ex. the body was regressed from an image), the measurements can be height-normalized as so:
 
 ```python
-measurer = MeasureSMPL()
-measurer.from_smpl(shape=betas, gender=gender) # assume given betas and gender
+measurer = MeasureBody(model_type) # assume given model type
+measurer.from_body_model(shape=betas, gender=gender) # assume given betas and gender
 
-all_measurement_names = MeasurementDefinitions.possible_measurements
+all_measurement_names = measurer.possible_measurements
 measurer.measure(all_measurement_names)
 new_height = 175
 measurer.height_normalize_measurements(new_height)
@@ -169,13 +177,39 @@ This creates a dict of measurements `measurer.height_normalized_measurements` wh
 ```
 new_measurement = (old_measurement / old_height) * new_height
 ```
+<br>
+
+### Additional visualizations
+To visualize the SMPL and SMPLX face segmentation on two separate plots, run:
+```bash
+python visualize.py --visualize_smpl_and_smplx_face_segmentation
+```
+
+To visualize the SMPL and SMPLX joints on the same plot, run:
+```bash
+python visualize.py --visualize_smpl_and_smplx_joints
+```
+
+To visualize the SMPL and SMPLX point segmentations on two side-by-side plots, run:
+```bash
+python visualize.py --visualize_smpl_and_smplx_point_segmentation
+```
+NOTE: You need to provide the `point_segmentation_meshcapade.json` files in the folders `data/smpl` and `data/smplx` from [here](https://meshcapade.wiki/SMPL#body-part-segmentation).
+
+To visualize the SMPL and SMPLX landmarks on two side-by-side plots, run:
+```bash
+python visualize.py --visualize_smpl_and_smplx_landmarks
+```
+
 
 <br>
 <br>
 
 ## TODO
 
-- [ ] Implement other body models (SMPL-X, STAR, ...)
+- [X] Implement SMPL-X body model
+- [ ] Implement STAR body model
+- [ ] Implement SUPR body model
 - [X] Add height normalization for the measurements
 - [ ] Allow posed and shaped body models as inputs, and measure them after unposing
 
