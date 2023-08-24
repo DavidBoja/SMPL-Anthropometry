@@ -213,4 +213,6 @@ python visualize.py --visualize_smpl_and_smplx_landmarks
 - [X] Add height normalization for the measurements
 - [ ] Allow posed and shaped body models as inputs, and measure them after unposing
 
+<br>
 
+⭐ <b>Leave a star if you find this repository useful</b> ⭐
