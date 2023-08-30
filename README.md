@@ -101,7 +101,7 @@ from evaluate import evaluate_mae
 MAE = evaluate_mae(measurer1.measurements,measurer2.measurements)
 ```
 
-where `measurer1` and `measurer2` are two intances of the `MeasureSMPL` class.
+where `measurer1` and `measurer2` are two intances of the `MeasureBody` class.
 
 <br>
 
