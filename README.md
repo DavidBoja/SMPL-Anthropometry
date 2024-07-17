@@ -25,6 +25,8 @@ Next, provide the body models (SMPL or SMPLX) and:
 1. put the `SMPL_{GENDER}.pkl` (MALE, FEMALE and NEUTRAL) models into the `data/smpl` folder
 2. put the `SMPLX_{GENDER}.pkl` (MALE, FEMALE and NEUTRAL) models into the `data/smplx` folder
 
+All the models can be found [here](https://github.com/vchoutas/smplx#downloading-the-model).
+
 <br>
 
 ## 🏃 Running
