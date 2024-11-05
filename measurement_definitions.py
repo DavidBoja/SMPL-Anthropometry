@@ -101,6 +101,31 @@ class SMPLMeasurementDefinitions():
                     (SMPL_LANDMARK_INDICES["LEFT_SHOULDER"], 
                      SMPL_LANDMARK_INDICES["RIGHT_SHOULDER"]
                     ),
+                "arm length (shoulder to elbow)":
+                    (
+                    #  SMPL_LANDMARK_INDICES["LEFT_SHOULDER"], 
+                    #  SMPL_LANDMARK_INDICES["LEFT_ELBOW"]
+                    SMPL_LANDMARK_INDICES["Rt. Acromion"],
+                    SMPL_LANDMARK_INDICES["Rt. Humeral Lateral Epicn"]
+                    ),
+                "crotch height":
+                    (SMPL_LANDMARK_INDICES["CROTCH"],
+                     SMPL_LANDMARK_INDICES["HEELS"]
+                    ),
+                "Hip circumference max height":
+                    (SMPL_LANDMARK_INDICES["PUBIC_BONE"],
+                     SMPL_LANDMARK_INDICES["HEELS"]
+                    ),
+                # FIXME: implement geodesic distance for this measurement
+                "arm length (spine to wrist)": 
+                    (
+                    #  SMPL_LANDMARK_INDICES["SHOULDER_TOP"], 
+                    #  SMPL_LANDMARK_INDICES["LEFT_WRIST"]
+                        SMPL_LANDMARK_INDICES["Cervicale"],
+                        SMPL_LANDMARK_INDICES["Rt. Acromion"],
+                        SMPL_LANDMARK_INDICES["Rt. Humeral Lateral Epicn"],
+                        SMPL_LANDMARK_INDICES["Rt. Ulnar Styloid"]
+                    ),
                }
 
     # defined with landmarks and joints
