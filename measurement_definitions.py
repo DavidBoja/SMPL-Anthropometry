@@ -45,6 +45,11 @@ MEASUREMENT_TYPES = {
         "calf left circumference": MeasurementType.CIRCUMFERENCE,
         "ankle left circumference": MeasurementType.CIRCUMFERENCE,
         "shoulder breadth": MeasurementType.LENGTH,
+
+        "arm length (shoulder to elbow)": MeasurementType.LENGTH,
+        "arm length (spine to wrist)": MeasurementType.LENGTH,
+        "crotch height": MeasurementType.LENGTH,
+        "Hip circumference max height": MeasurementType.LENGTH,
     }
 
 class SMPLMeasurementDefinitions():

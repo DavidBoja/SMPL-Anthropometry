@@ -22,7 +22,17 @@ SMPL_LANDMARK_INDICES = {"HEAD_TOP": 412,
                     "LOW_LEFT_HIP": 3134,
                     "LEFT_THIGH": 947,
                     "LEFT_CALF": 1103,
-                    "LEFT_ANKLE": 3325
+                    "LEFT_ANKLE": 3325,
+                    "LEFT_ELBOW": 1643,
+
+                    "BUTTHOLE": 3119,
+
+                    # introduce CAESAR landmarks because
+                    # i need to measure arms in parts
+                    "Cervicale": 829,
+                    'Rt. Acromion': 5342,
+                    'Rt. Humeral Lateral Epicn': 5090,
+                    'Rt. Ulnar Styloid': 5520,
                     }
 
 SMPL_LANDMARK_INDICES["HEELS"] = (SMPL_LANDMARK_INDICES["LEFT_HEEL"], 
