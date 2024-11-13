@@ -74,8 +74,6 @@ class SMPLMeasurementDefinitions():
        used for finding the measurement. The body parts are defined by the SMPL 
        face segmentation.
     '''
-
-    possible_measurements = MEASUREMENT_TYPES.keys()
     
     LENGTHS = {"height": 
                     (SMPL_LANDMARK_INDICES["HEAD_TOP"], 
@@ -166,6 +164,8 @@ class SMPLMeasurementDefinitions():
                                     "JOINTS":["pelvis","spine3"]},      
                     
                     }
+    
+    possible_measurements = list(LENGTHS.keys()) + list(CIRCUMFERENCES.keys())
 
     CIRCUMFERENCE_TO_BODYPARTS = {
         "head circumference": "head",
@@ -205,8 +205,6 @@ class SMPLXMeasurementDefinitions():
        used for finding the measurement. The body parts are defined by the SMPL 
        face segmentation.
     '''
-
-    possible_measurements = MEASUREMENT_TYPES.keys()
     
     LENGTHS = {"height": 
                     (SMPLX_LANDMARK_INDICES["HEAD_TOP"], 
@@ -272,6 +270,8 @@ class SMPLXMeasurementDefinitions():
                                     "JOINTS":["pelvis","spine3"]},      
                     
                     }
+    
+    possible_measurements = list(LENGTHS.keys()) + list(CIRCUMFERENCES.keys())
 
     CIRCUMFERENCE_TO_BODYPARTS = {
         "head circumference": "head",
