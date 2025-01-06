@@ -203,6 +203,31 @@ To visualize the SMPL and SMPLX landmarks on two side-by-side plots, run:
 python visualize.py --visualize_smpl_and_smplx_landmarks
 ```
 
+<br>
+<br>
+
+## 🤸‍♂️ Measuring posed subjects
+
+This repository is meant to measure the SMPL family of models in the neutral T-pose. If you wish to measure a posed SMPL or scan of a subject, please refer to our [pose-independent anthropometry](https://github.com/DavidBoja/pose-independent-anthropometry/) repository.
+
+
+<br>
+<br>
+
+## 🗞️ Citation
+
+Please cite our work and leave a star ⭐ if you find the repository useful.
+
+```bibtex
+@misc{SMPL-Anthropometry,
+  author = {Bojani\'{c}, D.},
+  title = {SMPL-Anthropometry},
+  year = {2024},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/DavidBoja/SMPL-Anthropometry}},
+}
+```
 
 <br>
 <br>
