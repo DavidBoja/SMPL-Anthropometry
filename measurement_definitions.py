@@ -40,6 +40,7 @@ MEASUREMENT_TYPES = {
         "bicep right circumference": MeasurementType.CIRCUMFERENCE,
         "forearm right circumference": MeasurementType.CIRCUMFERENCE,
         "arm right length": MeasurementType.LENGTH,
+        "arm left length":  MeasurementType.LENGTH,
         "inside leg height": MeasurementType.LENGTH,
         "thigh left circumference": MeasurementType.CIRCUMFERENCE,
         "calf left circumference": MeasurementType.CIRCUMFERENCE,
@@ -49,7 +50,7 @@ MEASUREMENT_TYPES = {
         "arm length (shoulder to elbow)": MeasurementType.LENGTH,
         "arm length (spine to wrist)": MeasurementType.LENGTH,
         "crotch height": MeasurementType.LENGTH,
-        "Hip circumference max height": MeasurementType.LENGTH,
+        "Hip circumference max height": MeasurementType.LENGTH
     }
 
 class SMPLMeasurementDefinitions():
